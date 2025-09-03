@@ -1,0 +1,22 @@
+{
+  "name": "twitchbot",
+  "version": "1.0.0",
+  "description": "Simple Twitch IRC bot via WebSocket",
+  "main": "index.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node index.js",
+    "get-token": "node scripts/get-token.js",
+    "get-user-token": "node scripts/get-user-token.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.11.0",
+    "dotenv": "^16.4.5",
+    "open": "^10.1.0",
+    "ws": "^8.18.0"
+  }
+}
