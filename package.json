@@ -1,23 +1,25 @@
 {
-  "name": "twitchbot",
+  "name": "twitch-bot",
   "version": "1.0.0",
-  "description": "Simple Twitch IRC bot via WebSocket",
-  "main": "index.js",
+  "description": "Simple Twitch chat bot using tmi.js with Helix utilities and local OAuth helper.",
+  "main": "src/index.js",
   "type": "commonjs",
   "scripts": {
-    "start": "node index.js",
-    "get-user-token": "node scripts/get-user-token.js",
-  "refresh-token": "node scripts/refresh-token.js",
-  "set-token": "node scripts/set-token.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.js",
+    "auth": "node src/auth.js"
   },
-  "keywords": [],
+  "keywords": [
+    "twitch",
+    "bot",
+    "tmi.js",
+    "helix"
+  ],
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
-    "axios": "^1.11.0",
+    "axios": "^1.7.2",
     "dotenv": "^16.4.5",
-    "open": "^10.1.0",
-    "ws": "^8.18.0"
+    "express": "^4.19.2",
+    "tmi.js": "^1.8.5"
   }
 }
