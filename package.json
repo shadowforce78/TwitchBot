@@ -6,7 +6,6 @@
   "type": "commonjs",
   "scripts": {
     "start": "node index.js",
-    "get-token": "node scripts/get-token.js",
     "get-user-token": "node scripts/get-user-token.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
