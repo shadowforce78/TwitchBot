@@ -7,6 +7,8 @@
   "scripts": {
     "start": "node index.js",
     "get-user-token": "node scripts/get-user-token.js",
+  "refresh-token": "node scripts/refresh-token.js",
+  "set-token": "node scripts/set-token.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],

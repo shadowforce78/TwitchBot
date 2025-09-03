@@ -41,17 +41,21 @@ authorizeUrl.searchParams.set('response_type', 'code');
 authorizeUrl.searchParams.set('scope', SCOPES.join(' '));
 authorizeUrl.searchParams.set('code_challenge', challenge);
 authorizeUrl.searchParams.set('code_challenge_method', 'S256');
+authorizeUrl.searchParams.set('force_verify', 'true');
 
 const port = Number(new URL(REDIRECT_URI).port || 3000);
 
-function updateEnvToken(token) {
+function updateEnv(values) {
   const envPath = path.resolve(process.cwd(), '.env');
   let content = '';
   try { content = fs.readFileSync(envPath, 'utf8'); } catch {}
-  if (content.includes('TWITCH_OAUTH_TOKEN=')) {
-    content = content.replace(/TWITCH_OAUTH_TOKEN\s*=.*$/m, `TWITCH_OAUTH_TOKEN=${token}`);
-  } else {
-    content += (content.endsWith('\n') ? '' : '\n') + `TWITCH_OAUTH_TOKEN=${token}\n`;
+  for (const [key, val] of Object.entries(values)) {
+    const line = `${key}=${val}`;
+    if (content.match(new RegExp(`^${key}=`, 'm'))) {
+      content = content.replace(new RegExp(`^${key}=.*$`, 'm'), line);
+    } else {
+      content += (content.endsWith('\n') ? '' : '\n') + line + '\n';
+    }
   }
   fs.writeFileSync(envPath, content, 'utf8');
 }
@@ -87,9 +91,14 @@ const server = http.createServer(async (req, res) => {
     }
     const tokenResp = await axios.post('https://id.twitch.tv/oauth2/token', null, { params });
     const accessToken = tokenResp.data.access_token;
-    updateEnvToken(accessToken.startsWith('oauth:') ? accessToken : `oauth:${accessToken}`);
-    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }).end('<h3>Token ajouté à .env ✅</h3>Vous pouvez fermer cette fenêtre.');
-    console.log('Token utilisateur obtenu et écrit dans .env (TWITCH_OAUTH_TOKEN).');
+    const refreshToken = tokenResp.data.refresh_token;
+    updateEnv({
+      TWITCH_OAUTH_TOKEN: accessToken.startsWith('oauth:') ? accessToken : `oauth:${accessToken}`,
+      ...(refreshToken ? { TWITCH_REFRESH_TOKEN: refreshToken } : {}),
+    });
+    res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' }).end('<h3>Token(s) ajouté(s) à .env ✅</h3>Vous pouvez fermer cette fenêtre.');
+    console.log('Access Token écrit: TWITCH_OAUTH_TOKEN.');
+    if (refreshToken) console.log('Refresh Token écrit: TWITCH_REFRESH_TOKEN.');
   } catch (e) {
     console.error('Échec échange code->token:', e.response?.data || e.message);
     res.writeHead(500, { 'Content-Type': 'text/plain; charset=utf-8' }).end('Erreur lors de l\'échange de code.');

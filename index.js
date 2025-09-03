@@ -35,35 +35,57 @@ socket.on('open', () => {
 });
 
 socket.on('message', (data) => {
-    const msg = data.toString();
-    // Affiche brut pour debug
-    console.log(msg.trim());
+    const raw = data.toString();
+    const lines = raw.split(/\r?\n/).filter(Boolean);
+    for (let msg of lines) {
+        // Affiche brut pour debug
+        console.log(msg.trim());
 
-    // Notifies login unsuccessful => souvent token invalide ou username ≠ propriétaire du token
-    if (msg.includes('Login unsuccessful')) {
-        console.error('Login Twitch échoué. Vérifie que TWITCH_USERNAME correspond au compte lié au token, et que le token est valide.');
-    }
+        // Notifies login unsuccessful => souvent token invalide ou username ≠ propriétaire du token
+        if (msg.includes('Login unsuccessful')) {
+            console.error('Login Twitch échoué. Vérifie que TWITCH_USERNAME correspond au compte lié au token, et que le token est valide.');
+        }
 
-    // Répond aux PING pour garder la connexion vivante
-    if (msg.startsWith('PING')) {
-        socket.send(msg.replace('PING', 'PONG'));
-        return;
-    }
+        // Répond aux PING pour garder la connexion vivante
+        if (msg.startsWith('PING')) {
+            socket.send(msg.replace('PING', 'PONG'));
+            continue;
+        }
 
-    // Détecte la fin du JOIN (End of /NAMES list) pour marquer la dispo
-    const endNames = msg.match(/^:.* 366 [^ ]+ #(\w+) :End of \/NAMES list/);
-    if (endNames) {
-        joined = true;
-        // Message de test (une seule fois)
-        safeSendMessage(endNames[1], 'Bot connecté ✅');
-    }
+        // Détecte la fin du JOIN (End of /NAMES list) pour marquer la dispo
+        const endNames = msg.match(/^:.* 366 [^ ]+ #(\w+) :End of \/NAMES list/);
+        if (endNames) {
+            joined = true;
+            // Message de test (une seule fois)
+            safeSendMessage(endNames[1], 'Bot connecté ✅');
+            continue;
+        }
 
-    // Détecte les messages chat et répond à !ping
-    const match = msg.match(/^:([^!]+)!.* PRIVMSG #(\w+) :(.*)$/);
-    if (match) {
-        const [_, author, ch, text] = match;
-        if (text.trim().toLowerCase() === '!ping') {
-            safeSendMessage(ch, `Pong! (salut ${author})`);
+        // Avertit si le serveur indique un nick différent (001 <nick>)
+        const rpl001 = msg.match(/^:tmi\.twitch\.tv 001 ([^ ]+) :/);
+        if (rpl001) {
+            const connectedNick = rpl001[1].toLowerCase();
+            if (connectedNick !== username) {
+                console.warn(`Attention: connecté en tant que ${connectedNick}, mais TWITCH_USERNAME=${username}. Le token appartient sans doute à ${connectedNick}. Regénère le token en te connectant avec le bon compte.`);
+            }
+        }
+
+        // Détecte les messages chat et répond à !ping
+        // Retire les tags Twitch si présents (lignes commençant par @)
+        if (msg.startsWith('@')) {
+            const idx = msg.indexOf(' ');
+            if (idx !== -1) msg = msg.slice(idx + 1);
+        }
+
+        const m = msg.match(/^:([^!]+)!.* PRIVMSG #(\w+) :(.+)$/);
+        if (m) {
+            const author = m[1];
+            const ch = m[2];
+            const text = m[3].trim();
+            if (text.toLowerCase() === '!ping') {
+                console.log(`Reçu !ping de ${author}, envoi Pong!`);
+                safeSendMessage(ch, `Pong! (salut ${author})`);
+            }
         }
     }
 });
