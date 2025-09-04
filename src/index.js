@@ -33,26 +33,40 @@ if (process.env.TWITCH_CHAT_OAUTH) {
 // Create tmi client
 const client = new tmi.Client(clientOpts);
 
+function isAuthenticated() {
+  const id = client.opts.identity;
+  return !!(id && id.username && id.password && id.password.trim().length > 0);
+}
+
+function sendMessage(channel, content) {
+  if (!isAuthenticated()) {
+    console.log('[chat] Ignoré (non authentifié):', content);
+    return Promise.resolve(false);
+  }
+  return client.say(channel, content).then(() => true).catch(err => {
+    console.error('[chat] Envoi échoué', err?.message || err);
+    return false;
+  });
+}
+
 client.on('message', async (channel, tags, message, self) => {
   if (self) return;
   const msg = message.trim();
 
   // Simple commands
   if (msg === '!help') {
-    if (client.opts.identity) {
-      client.say(channel, 'Commandes: !ping, !uptime');
+    if (isAuthenticated()) {
+      sendMessage(channel, 'Commandes: !ping, !uptime');
     }
     return;
   }
 
   if (msg === '!ping') {
-    if (client.opts.identity.password) {
-      client.say(channel, 'pong');
-    }
+    if (isAuthenticated()) sendMessage(channel, 'pong');
     return;
   }
 
-  if (msg === '!uptime') {
+  if (msg === '!socials') {
     try {
       const token = await getAppAccessToken(CLIENT_ID, CLIENT_SECRET);
       const userId = await getUserId(token, CLIENT_ID, CHANNEL.replace(/^#/, ''));
@@ -64,13 +78,9 @@ client.on('message', async (channel, tags, message, self) => {
         const hours = Math.floor(mins / 60);
         const rem = mins % 60;
         const text = hours > 0 ? `${hours}h${rem}m` : `${rem}m`;
-        if (client.opts.identity.password) {
-          client.say(channel, `Le live est en cours depuis ${text}.`);
-        }
+        if (isAuthenticated()) sendMessage(channel, `Le live est en cours depuis ${text}.`);
       } else {
-        if (client.opts.identity.password) {
-          client.say(channel, 'Le live est hors-ligne.');
-        }
+        if (isAuthenticated()) sendMessage(channel, 'Le live est hors-ligne.');
       }
     } catch (err) {
       console.error('[uptime] error', err?.response?.data || err.message);
@@ -81,11 +91,16 @@ client.on('message', async (channel, tags, message, self) => {
 
 client.on('connected', (addr, port) => {
   console.log(`[chat] Connecté à ${addr}:${port} - canal #${CHANNEL}`);
-  if (!client.opts.identity) {
+  if (!isAuthenticated()) {
     console.log('[chat] Mode lecture seule (anonyme). Pour parler, ajoutez TWITCH_CHAT_OAUTH dans .env');
   }
 });
 
 client.connect().catch(err => {
   console.error('[chat] connection error', err);
+});
+
+// Capture globale des promesses rejetées pour éviter l'arrêt brutal et diagnostiquer
+process.on('unhandledRejection', (reason) => {
+  console.error('[global] Rejet de promesse non géré:', reason);
 });
