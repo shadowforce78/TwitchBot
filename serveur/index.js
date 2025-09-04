@@ -3,7 +3,7 @@ require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
 
-const PORT = process.env.WEB_PORT || 3002;
+const PORT = process.env.WEB_PORT || 3003;
 
 const app = express();
 app.use(bodyParser.json());
@@ -35,8 +35,6 @@ app.post('/say', async (req, res) => {
 app.get('/', (req, res) => {
 	res.send('<h1>Serveur Web TwitchBot</h1><p>POST /say { message }</p>');
 });
-
-
 
 
 module.exports = {

@@ -32,4 +32,19 @@ async function getStreamInfo(accessToken, clientId, userId) {
   return data.data?.[0] || null;
 }
 
-module.exports = { getAppAccessToken, getUserId, getStreamInfo };
+async function refreshChatToken(clientId, clientSecret, refreshToken) {
+  const params = new URLSearchParams({
+    client_id: clientId,
+    client_secret: clientSecret,
+    grant_type: 'refresh_token',
+    refresh_token: refreshToken
+  });
+  const { data } = await axios.post('https://id.twitch.tv/oauth2/token', params);
+  // Renvoie le nouveau access_token et refresh_token
+  return {
+    access_token: data.access_token,
+    refresh_token: data.refresh_token
+  };
+}
+
+module.exports = { getAppAccessToken, getUserId, getStreamInfo, refreshChatToken };

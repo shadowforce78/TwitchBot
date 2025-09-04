@@ -45,13 +45,20 @@ app.get('/callback', async (req, res) => {
     });
     const { data } = await axios.post('https://id.twitch.tv/oauth2/token', params);
     const chatOAuth = `oauth:${data.access_token}`;
+    const refresh = data.refresh_token;
     console.log('\n[auth] Token récupéré. Ajoutez dans .env :');
-    console.log('TWITCH_CHAT_OAUTH=' + chatOAuth + '\n');
+    console.log('TWITCH_CHAT_OAUTH=' + chatOAuth);
+    if (refresh) {
+      console.log('TWITCH_CHAT_REFRESH=' + refresh);
+    }
+    console.log('\n');
     res.send(`
       <h2>Succès ✔</h2>
       <p>Ajoutez dans votre fichier .env :</p>
-      <pre>TWITCH_CHAT_OAUTH=${chatOAuth}</pre>
+      <pre>TWITCH_CHAT_OAUTH=${chatOAuth}
+${refresh ? `TWITCH_CHAT_REFRESH=${refresh}` : ''}</pre>
       <p>Ensuite redémarrez le bot: <code>npm start</code></p>
+      <p>Le refresh_token permet de régénérer automatiquement le token chat sans repasser par la connexion Twitch.</p>
     `);
   } catch (err) {
     console.error('[auth] Erreur OAuth', err?.response?.data || err.message);
