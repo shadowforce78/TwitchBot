@@ -2,6 +2,7 @@
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
+const { join } = require('path');
 
 const PORT = process.env.WEB_PORT || 3003;
 
@@ -16,24 +17,9 @@ try {
 	console.warn('[serveur] Impossible de charger le botInstance:', err.message);
 }
 
-app.post('/say', async (req, res) => {
-	if (!bot || typeof bot.sendMessage !== 'function') {
-		return res.status(500).json({ error: 'Bot non disponible' });
-	}
-	const { message } = req.body;
-	if (!message || typeof message !== 'string') {
-		return res.status(400).json({ error: 'Message manquant ou invalide' });
-	}
-	try {
-		await bot.sendMessage(message);
-		res.json({ ok: true });
-	} catch (err) {
-		res.status(500).json({ error: err.message || err });
-	}
-});
 
 app.get('/', (req, res) => {
-	res.send('<h1>Serveur Web TwitchBot</h1><p>POST /say { message }</p>');
+	res.sendFile(join(__dirname, 'public', 'index.html'));
 });
 
 
