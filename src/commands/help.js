@@ -4,7 +4,7 @@ module.exports = {
   showInHelp: false, // On ne s’affiche pas soi-même pour éviter le bruit (optionnel)
   async execute(ctx) {
     const list = ctx.registry
-      .filter(c => c.showInHelp)
+      .filter(c => c.showInHelp && c.enabled !== false)
       .map(c => `!${c.name}`)
       .join(', ');
     ctx.reply(list ? `Commandes: ${list}` : 'Aucune commande disponible.');

@@ -93,7 +93,7 @@ async function startBot() {
     const registry = loadCommands(commandsDir);
     console.log(
         "[commands] Chargées:",
-        registry.map((c) => c.name).join(", ") || "(aucune)"
+        registry.map((c) => `${c.name}${c.enabled === false ? ':off' : ''}`).join(", ") || "(aucune)"
     );
 
     client.on("message", async (channel, tags, message, self) => {
@@ -102,9 +102,13 @@ async function startBot() {
         if (!msg.startsWith("!")) return;
         const [rawName, ...args] = msg.slice(1).split(/\s+/);
         const name = rawName.toLowerCase();
-        const cmd = registry.find((c) => c.name === name);
-        if (!cmd) return; // commande inconnue, silence
+    const cmd = registry.find((c) => c.name === name);
+    if (!cmd) return; // commande inconnue, silence
+    if (cmd.enabled === false) return; // désactivée
         if (!isAuthenticated()) return; // en lecture seule, ignore tout
+        const isBroadcaster = tags.badges && (tags.badges.broadcaster === '1' || tags['user-id'] === tags['room-id']);
+        const isMod = isBroadcaster || tags.mod === true || tags.mod === '1';
+        const isVip = !!(tags.badges && tags.badges.vip === '1');
         const ctx = {
             channel,
             user: tags["display-name"] || tags.username,
@@ -116,6 +120,11 @@ async function startBot() {
             clientId: CLIENT_ID,
             clientSecret: CLIENT_SECRET,
             channelLogin: CHANNEL_LOGIN,
+            badges: tags.badges || {},
+            isBroadcaster,
+            isMod,
+            isVip,
+            userId: tags['user-id']
         };
         try {
             await cmd.execute(ctx);
