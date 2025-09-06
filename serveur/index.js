@@ -8,6 +8,11 @@ const PORT = process.env.WEB_PORT || 3003;
 
 const app = express();
 app.use(bodyParser.json());
+// Use static files (CSS, JS, images)
+app.use('/css', express.static(join(__dirname, 'public', 'css')));
+app.use('/js', express.static(join(__dirname, 'public', 'js')));
+app.use('/images', express.static(join(__dirname, 'public', 'assets', 'img')));
+app.use('/icons', express.static(join(__dirname, 'public', 'assets', 'ico')));
 
 // Import du bot (on suppose qu'il exporte une fonction sendMessage)
 let bot;
