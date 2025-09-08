@@ -173,6 +173,33 @@ app.post('/logout', (req, res) => {
 	});
 });
 
+// ==== API commandes ====
+app.get('/api/commands', (req, res) => {
+	if (!req.session.user || !(req.session.user.isModerator || req.session.user.isWhitelisted)) return res.status(403).json({ error: 'forbidden' });
+	try {
+		const { getRegistry } = require('../src/botInstance');
+		const reg = getRegistry() || [];
+		res.json(reg.map(c => ({ name: c.name, enabled: c.enabled !== false, description: c.description || '' })));
+	} catch (e) {
+		res.status(500).json({ error: 'internal' });
+	}
+});
+
+app.post('/api/commands/:name/toggle', (req, res) => {
+	if (!req.session.user || !(req.session.user.isModerator || req.session.user.isWhitelisted)) return res.status(403).json({ error: 'forbidden' });
+	try {
+		const { getRegistry } = require('../src/botInstance');
+		const reg = getRegistry() || [];
+		const cmd = reg.find(c => c.name === req.params.name);
+		if (!cmd) return res.status(404).json({ error: 'not_found' });
+		if (cmd.name === 'command') return res.status(400).json({ error: 'protected' });
+		cmd.enabled = !(cmd.enabled !== false);
+		res.json({ name: cmd.name, enabled: cmd.enabled });
+	} catch (e) {
+		res.status(500).json({ error: 'internal' });
+	}
+});
+
 module.exports = {
 	start: () => app.listen(PORT, () => {
 		console.log(`[serveur] Serveur web démarré sur ${BASE_URL}`);

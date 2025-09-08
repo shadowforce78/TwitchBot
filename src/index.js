@@ -144,7 +144,7 @@ async function startBot() {
         // Enregistrer l'instance pour le panneau
         try {
             const { registerBot } = require('./botInstance');
-            registerBot(client, CHANNEL);
+            registerBot(client, CHANNEL, registry);
         } catch (e) {
             console.warn('[botInstance] Enregistrement échoué:', e.message);
         }

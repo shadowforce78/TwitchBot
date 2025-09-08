@@ -1,14 +1,16 @@
 // Gestion centralisée de l'instance du bot pour éviter les require circulaires
 let _client = null;
 let _channel = null;
+let _registry = null;
 
-function registerBot(client, channel) {
+function registerBot(client, channel, registry) {
   _client = client;
   _channel = channel;
+  if (Array.isArray(registry)) _registry = registry;
 }
 
 function getBot() {
-  return { client: _client, channel: _channel };
+  return { client: _client, channel: _channel, registry: _registry };
 }
 
 async function sendMessage(message, channelOverride) {
@@ -18,4 +20,6 @@ async function sendMessage(message, channelOverride) {
   return _client.say(target, message);
 }
 
-module.exports = { registerBot, getBot, sendMessage };
+function getRegistry() { return _registry; }
+
+module.exports = { registerBot, getBot, sendMessage, getRegistry };
