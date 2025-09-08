@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <title>Panel Bot</title>
+  <link rel="stylesheet" href="/css/common.css" />
+  <style>
+    body { font-family: Arial, sans-serif; padding: 1rem; background:#111; color:#eee; }
+    header { display:flex; align-items:center; gap:1rem; }
+    img.pdp { width:48px; height:48px; border-radius:50%; }
+    .cards { display:grid; grid-template-columns: repeat(auto-fit,minmax(250px,1fr)); gap:1rem; margin-top:1.5rem; }
+    .card { background:#1e1e1e; border:1px solid #333; border-radius:8px; padding:1rem; }
+    button { cursor:pointer; }
+  </style>
+  <script defer src="/js/panel.js"></script>
+</head>
+<body>
+  <header>
+    <div id="userInfo">Chargement...</div>
+    <form method="post" action="/logout"><button type="submit">Logout</button></form>
+  </header>
+  <h1>Panel de gestion du bot</h1>
+  <p>Réservé aux modérateurs/broadcaster de la chaîne.</p>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Statut</h3>
+      <p id="botStatus">En ligne</p>
+    </div>
+    <div class="card">
+      <h3>Envoyer un message</h3>
+      <input type="text" id="msgInput" placeholder="Votre message" style="width:100%;" />
+      <button id="sendBtn" style="margin-top:.5rem;">Envoyer</button>
+      <div id="sendResult" style="margin-top:.5rem;font-size:.85rem;"></div>
+    </div>
+  </div>
+</body>
+</html>

@@ -141,6 +141,13 @@ async function startBot() {
                 "[chat] Mode lecture seule (anonyme). Pour parler, ajoutez TWITCH_CHAT_OAUTH dans .env"
             );
         }
+        // Enregistrer l'instance pour le panneau
+        try {
+            const { registerBot } = require('./botInstance');
+            registerBot(client, CHANNEL);
+        } catch (e) {
+            console.warn('[botInstance] Enregistrement échoué:', e.message);
+        }
     });
 
     client.connect().catch((err) => {

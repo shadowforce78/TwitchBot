@@ -1,9 +1,21 @@
-// Exporte une fonction sendMessage pour le serveur web
-const { client, isAuthenticated, CHANNEL } = require('./index');
+// Gestion centralisée de l'instance du bot pour éviter les require circulaires
+let _client = null;
+let _channel = null;
 
-async function sendMessage(message) {
-  if (!isAuthenticated()) throw new Error('Bot non authentifié');
-  return client.say(CHANNEL, message);
+function registerBot(client, channel) {
+  _client = client;
+  _channel = channel;
 }
 
-module.exports = { sendMessage };
+function getBot() {
+  return { client: _client, channel: _channel };
+}
+
+async function sendMessage(message, channelOverride) {
+  if (!_client) throw new Error('Bot non initialisé');
+  const target = channelOverride || _channel;
+  if (!target) throw new Error('Canal inconnu');
+  return _client.say(target, message);
+}
+
+module.exports = { registerBot, getBot, sendMessage };
