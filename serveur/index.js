@@ -194,6 +194,12 @@ app.post('/api/commands/:name/toggle', (req, res) => {
 		if (!cmd) return res.status(404).json({ error: 'not_found' });
 		if (cmd.name === 'command') return res.status(400).json({ error: 'protected' });
 		cmd.enabled = !(cmd.enabled !== false);
+		try {
+			const { saveState } = require('../src/storage/commandState');
+			saveState(reg);
+		} catch (e) {
+			console.warn('[commands][state] panel save error:', e.message);
+		}
 		res.json({ name: cmd.name, enabled: cmd.enabled });
 	} catch (e) {
 		res.status(500).json({ error: 'internal' });

@@ -91,6 +91,13 @@ async function startBot() {
     // Chargement dynamique des commandes
     const commandsDir = path.join(__dirname, "commands");
     const registry = loadCommands(commandsDir);
+    // Applique état persistant (disabled) si existant
+    try {
+        const { applyState } = require('./storage/commandState');
+        applyState(registry);
+    } catch (e) {
+        console.warn('[commands][state] apply error:', e.message);
+    }
     console.log(
         "[commands] Chargées:",
         registry.map((c) => `${c.name}${c.enabled === false ? ':off' : ''}`).join(", ") || "(aucune)"

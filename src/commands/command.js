@@ -20,11 +20,17 @@ module.exports = {
         if (action === 'enable') {
             if (target.enabled) return ctx.reply(`'${target.name}' déjà activée.`);
             target.enabled = true;
-            return ctx.reply(`Commande '${target.name}' activée.`);
         } else {
             if (!target.enabled) return ctx.reply(`'${target.name}' déjà désactivée.`);
             target.enabled = false;
-            return ctx.reply(`Commande '${target.name}' désactivée.`);
         }
+        // Sauvegarde état
+        try {
+            const { saveState } = require('../storage/commandState');
+            saveState(ctx.registry);
+        } catch (e) {
+            console.warn('[commands][state] save error:', e.message);
+        }
+        return ctx.reply(`Commande '${target.name}' ${target.enabled ? 'activée' : 'désactivée'}.`);
     }
 };
