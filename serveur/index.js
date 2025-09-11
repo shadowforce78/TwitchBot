@@ -72,7 +72,7 @@ app.get('/oauth/callback', async (req, res) => {
 		if (!user) return res.status(500).send('Utilisateur introuvable');
 
 		// Vérifier modération: nécessite liste des modérateurs (alternative: Get Chatters + badges via autre endpoint)
-		let isModerator = false;
+		let isAuthorized = false;
 		try {
 			const modsResp = await axios.get('https://api.twitch.tv/helix/moderation/moderators', {
 				headers: { 'Authorization': `Bearer ${accessToken}`, 'Client-Id': CLIENT_ID },
@@ -89,26 +89,19 @@ app.get('/oauth/callback', async (req, res) => {
 			});
 			const channelUser = channelUserResp.data.data?.[0];
 			if (channelUser) {
-				const modListResp = await axios.get('https://api.twitch.tv/helix/moderation/moderators', {
-					headers: { 'Authorization': `Bearer ${accessToken}`, 'Client-Id': CLIENT_ID },
-					params: { broadcaster_id: channelUser.id, user_id: user.id }
-				});
-				if (Array.isArray(modListResp.data.data) && modListResp.data.data.length > 0) {
-					isModerator = true;
-				}
 				// Broadcaster lui-même a plein accès
 				if (user.id === channelUser.id) {
-					isModerator = true;
+					isAuthorized = true;
 				}
 			}
 		} catch (err) {
-			console.warn('[oauth] Vérification mod échouée', err?.response?.data || err.message);
+			console.warn('[oauth] Vérification d\'accès échouée', err?.response?.data || err.message);
 		}
 
 		// Application whitelist
 		const loginLower = user.login.toLowerCase();
 		const isWhitelisted = WHITELIST.includes(loginLower);
-		if (isWhitelisted && !isModerator) {
+		if (isWhitelisted) {
 			console.log(`[oauth] Accès autorisé par whitelist pour ${user.login}`);
 		}
 		req.session.user = {
@@ -117,11 +110,11 @@ app.get('/oauth/callback', async (req, res) => {
 			displayName: user.display_name,
 			profileImage: user.profile_image_url,
 			accessToken,
-			isModerator: isModerator || isWhitelisted,
+			isAuthorized: isAuthorized || isWhitelisted,
 			isWhitelisted
 		};
 
-		if (!(isModerator || isWhitelisted)) {
+		if (!(isAuthorized || isWhitelisted)) {
 			return res.redirect('/no-access');
 		}
 		res.redirect('/panel');
@@ -136,25 +129,25 @@ app.get('/no-access', (req, res) => {
 });
 
 // Middleware auth panel
-function requireModerator(req, res, next) {
+function requireAccess(req, res, next) {
 	if (!req.session.user) return res.redirect('/');
-	if (!(req.session.user.isModerator || req.session.user.isWhitelisted)) return res.redirect('/no-access');
+	if (!(req.session.user.isWhitelisted)) return res.redirect('/no-access');
 	next();
 }
 
-app.get('/panel', requireModerator, (req, res) => {
+app.get('/panel', requireAccess, (req, res) => {
 	res.sendFile(join(__dirname, 'public', 'panel.html'));
 });
 
 app.get('/api/me', (req, res) => {
 	if (!req.session.user) return res.json({ loggedIn: false });
-	const { id, login, displayName, profileImage, isModerator, isWhitelisted } = req.session.user;
-	res.json({ loggedIn: true, id, login, displayName, profileImage, isModerator, isWhitelisted });
+	const { id, login, displayName, profileImage, isAuthorized, isWhitelisted } = req.session.user;
+	res.json({ loggedIn: true, id, login, displayName, profileImage, isAuthorized, isWhitelisted });
 });
 
 // Endpoint pour envoyer un message via le bot (placeholder - nécessite intégration avec instance du bot)
 app.post('/api/chat/send', async (req, res) => {
-	if (!req.session.user || !req.session.user.isModerator) return res.status(403).json({ ok: false, error: 'forbidden' });
+	if (!req.session.user || !req.session.user.isAuthorized) return res.status(403).json({ ok: false, error: 'forbidden' });
 	const text = (req.body && req.body.message || '').trim();
 	if (!text) return res.json({ ok: false, error: 'empty' });
 	try {
@@ -175,7 +168,7 @@ app.post('/logout', (req, res) => {
 
 // ==== API commandes ====
 app.get('/api/commands', (req, res) => {
-	if (!req.session.user || !(req.session.user.isModerator || req.session.user.isWhitelisted)) return res.status(403).json({ error: 'forbidden' });
+	if (!req.session.user || !(req.session.user.isAuthorized || req.session.user.isWhitelisted)) return res.status(403).json({ error: 'forbidden' });
 	try {
 		const { getRegistry } = require('../src/botInstance');
 		const reg = getRegistry() || [];
@@ -186,7 +179,7 @@ app.get('/api/commands', (req, res) => {
 });
 
 app.post('/api/commands/:name/toggle', (req, res) => {
-	if (!req.session.user || !(req.session.user.isModerator || req.session.user.isWhitelisted)) return res.status(403).json({ error: 'forbidden' });
+	if (!req.session.user || !(req.session.user.isAuthorized || req.session.user.isWhitelisted)) return res.status(403).json({ error: 'forbidden' });
 	try {
 		const { getRegistry } = require('../src/botInstance');
 		const reg = getRegistry() || [];
