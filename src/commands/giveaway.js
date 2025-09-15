@@ -1,8 +1,10 @@
 module.exports = {
     name: 'giveaway',
     description: 'Informations sur le giveaway en cours.',
+    type: 'basic',
+    content: "🎉 GIVEAWAYY, pour en savoir plus sur les conditions de participation et/ou les prix : https://giveaway.gmocellin.com💥",
     showInHelp: true,
     async execute(ctx) {
-        ctx.reply('🎉 GIVEAWAYY, pour en savoir plus sur les conditions de participation et/ou les prix : https://giveaway.gmocellin.com💥');
+        ctx.reply(module.exports.content);
     }
 };

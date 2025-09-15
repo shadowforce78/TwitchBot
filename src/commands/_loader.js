@@ -11,6 +11,7 @@ function loadCommands(dir) {
             const mod = require(full);
             if (mod && mod.name && typeof mod.execute === 'function') {
                 if (typeof mod.enabled === 'undefined') mod.enabled = true; // valeur par défaut
+                if (typeof mod.type === 'undefined') mod.type = 'basic';
                 commands.push(mod);
             } else {
                 console.warn('[commands] Fichier ignoré (format invalide):', file);

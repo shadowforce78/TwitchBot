@@ -3,6 +3,7 @@ module.exports = {
     description: 'Active ou désactive une commande. Usage: !command enable|disable <nom>',
     showInHelp: false,
     enabled: true,
+    type: 'custom',
     async execute(ctx) {
         if (!ctx.isMod) {
             return ctx.reply('Permission refusée (mod/broadcaster requis).');

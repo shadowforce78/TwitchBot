@@ -4,6 +4,7 @@
   <meta charset="UTF-8" />
   <title>Panel Bot</title>
   <link rel="stylesheet" href="/css/common.css" />
+  <link rel="stylesheet" href="/css/panel.css" />
   <style>
     body { font-family: Arial, sans-serif; padding: 1rem; background:#111; color:#eee; }
     header { display:flex; align-items:center; gap:1rem; }
@@ -35,10 +36,46 @@
     </div>
     <div class="card">
       <h3>Commandes</h3>
-      <div id="commandsList" style="font-size:.85rem; display:flex; flex-direction:column; gap:.4rem;">
-        Chargement...
-      </div>
+      <div id="commands-panel" style="font-size:.95rem;"></div>
     </div>
   </div>
+  <script>
+    fetch('/api/commands')
+      .then(res => res.json())
+      .then(commands => {
+        function renderPanel() {
+          const panel = document.getElementById('commands-panel');
+          panel.innerHTML = '';
+          commands.forEach(cmd => {
+            const box = document.createElement('div');
+            box.className = 'command-box';
+            box.innerHTML = `
+              <h3>${cmd.name}</h3>
+              <p>${cmd.description || ''}</p>
+              <span style="font-size:.85em;color:#747474;">Type: ${cmd.type}</span>
+              ${cmd.type === 'basic' ? `<textarea class=\"cmd-content\">${cmd.content || ''}</textarea>` : ''}
+              <label class=\"switch\">
+                <input type=\"checkbox\" ${cmd.enabled ? 'checked' : ''} class=\"cmd-switch\">
+                <span class=\"slider\"></span> Actif
+              </label>
+            `;
+            // Switch on/off
+            box.querySelector('.cmd-switch').onchange = e => {
+              cmd.enabled = e.target.checked;
+              // TODO: appel API pour sauvegarder
+            };
+            // Content modifiable
+            if (cmd.type === 'basic') {
+              box.querySelector('.cmd-content').oninput = e => {
+                cmd.content = e.target.value;
+                // TODO: appel API pour sauvegarder
+              };
+            }
+            panel.appendChild(box);
+          });
+        }
+        renderPanel();
+      });
+  </script>
 </body>
 </html>

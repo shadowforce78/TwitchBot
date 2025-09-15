@@ -1,6 +1,7 @@
 module.exports = {
   name: 'help',
   description: 'Liste les commandes disponibles.',
+  type: 'custom',
   showInHelp: false, // On ne s’affiche pas soi-même pour éviter le bruit (optionnel)
   async execute(ctx) {
     const list = ctx.registry

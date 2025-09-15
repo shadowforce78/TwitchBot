@@ -1,4 +1,5 @@
 // Serveur Express avec OAuth Twitch + panneau de gestion
+
 require('dotenv').config();
 const express = require('express');
 const bodyParser = require('body-parser');
@@ -36,6 +37,22 @@ app.use('/icons', express.static(join(__dirname, 'public', 'assets', 'ico')));
 // Index
 app.get('/', (req, res) => {
 	res.sendFile(join(__dirname, 'public', 'index.html'));
+});
+
+// API: liste des commandes pour le panel
+app.get('/api/commands', (req, res) => {
+	const { loadCommands } = require('../src/commands/_loader');
+	const path = require('path');
+	const commands = loadCommands(path.join(__dirname, '../src/commands'));
+	// On ne renvoie que les champs utiles pour le panel
+	res.json(commands.map(cmd => ({
+		name: cmd.name,
+		description: cmd.description,
+		type: cmd.type,
+		content: cmd.content,
+		enabled: cmd.enabled,
+		showInHelp: cmd.showInHelp
+	})));
 });
 
 // Login route -> redirection OAuth Twitch
