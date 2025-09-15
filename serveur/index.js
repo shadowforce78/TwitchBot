@@ -16,8 +16,7 @@ const WHITELIST = (process.env.PANEL_WHITELIST || '')
 	.toLowerCase()
 	.split(/[\s,]+/)
 	.filter(Boolean);
-// const OAUTH_REDIRECT = `${BASE_URL}/oauth/callback`;
-const OAUTH_REDIRECT = `http://localhost:3003/oauth/callback`
+const OAUTH_REDIRECT = `${BASE_URL}/oauth/callback`;
 
 const app = express();
 app.use(bodyParser.json());
