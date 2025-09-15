@@ -37,45 +37,44 @@
     <div class="card">
       <h3>Commandes</h3>
       <div id="commands-panel" style="font-size:.95rem;"></div>
+  <div class="cards">
+    <div class="card">
+      <h3>📡 Bot Status</h3>
+      <p>Le bot est connecté et opérationnel.</p>
+      <div style="display: flex; gap: 10px; margin-top: 15px;">
+        <button class="btn-edit" onclick="sendTestMessage()">Test Message</button>
+        <input type="text" id="testMsg" placeholder="Message de test..." style="flex: 1; padding: 8px; border: 1px solid #555; background: #2a2a2a; color: #E0E0DF; border-radius: 4px;">
+      </div>
+    </div>
+
+    <div class="card">
+      <h3>⚙️ Gestion des Commandes</h3>
+      <p>Gérez les commandes de votre bot.</p>
+      
+      <!-- Bouton d'ajout de commande -->
+      <div style="margin-bottom: 20px;">
+        <button class="btn-edit" onclick="showAddCommandForm()">+ Ajouter Commande</button>
+      </div>
+
+      <!-- Formulaire d'ajout (caché par défaut) -->
+      <div id="add-command-form" style="display: none; margin-bottom: 20px; padding: 15px; background: #333; border-radius: 6px;">
+        <h4 style="color: #FFC69B; margin-top: 0;">Nouvelle Commande</h4>
+        <input type="text" id="new-cmd-name" placeholder="Nom de la commande" oninput="checkNewCommandFields()" style="width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #555; background: #2a2a2a; color: #E0E0DF; border-radius: 4px;">
+        <input type="text" id="new-cmd-description" placeholder="Description (optionnelle)" style="width: 100%; margin-bottom: 10px; padding: 8px; border: 1px solid #555; background: #2a2a2a; color: #E0E0DF; border-radius: 4px;">
+        <textarea id="new-cmd-content" placeholder="Contenu de la réponse" oninput="checkNewCommandFields()" style="width: 100%; height: 80px; margin-bottom: 15px; padding: 8px; border: 1px solid #555; background: #2a2a2a; color: #E0E0DF; border-radius: 4px; resize: vertical; font-family: inherit;"></textarea>
+        <div style="display: flex; gap: 10px;">
+          <button id="btn-create-cmd" class="btn-save" onclick="createCommand()" style="display: none;">✅ Créer</button>
+          <button class="btn-edit" onclick="hideAddCommandForm()">❌ Annuler</button>
+        </div>
+      </div>
+
+      <!-- Liste des commandes -->
+      <div id="commands-panel">
+        <!-- Commandes chargées dynamiquement -->
+      </div>
     </div>
   </div>
-  <script>
-    fetch('/api/commands')
-      .then(res => res.json())
-      .then(commands => {
-        function renderPanel() {
-          const panel = document.getElementById('commands-panel');
-          panel.innerHTML = '';
-          commands.forEach(cmd => {
-            const box = document.createElement('div');
-            box.className = 'command-box';
-            box.innerHTML = `
-              <h3>${cmd.name}</h3>
-              <p>${cmd.description || ''}</p>
-              <span style="font-size:.85em;color:#747474;">Type: ${cmd.type}</span>
-              ${cmd.type === 'basic' ? `<textarea class=\"cmd-content\">${cmd.content || ''}</textarea>` : ''}
-              <label class=\"switch\">
-                <input type=\"checkbox\" ${cmd.enabled ? 'checked' : ''} class=\"cmd-switch\">
-                <span class=\"slider\"></span> Actif
-              </label>
-            `;
-            // Switch on/off
-            box.querySelector('.cmd-switch').onchange = e => {
-              cmd.enabled = e.target.checked;
-              // TODO: appel API pour sauvegarder
-            };
-            // Content modifiable
-            if (cmd.type === 'basic') {
-              box.querySelector('.cmd-content').oninput = e => {
-                cmd.content = e.target.value;
-                // TODO: appel API pour sauvegarder
-              };
-            }
-            panel.appendChild(box);
-          });
-        }
-        renderPanel();
-      });
-  </script>
+
+  <script src="/js/panel.js?v=3"></script>
 </body>
 </html>
