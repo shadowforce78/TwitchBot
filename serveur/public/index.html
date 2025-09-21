@@ -23,11 +23,30 @@
                 <button class="more">More</button>
             </div>
             <div class="navbar-right">
+                <button id="adminBtn" class="admin-btn" style="display:none;">Panel Admin</button>
                 <button id="loginBtn" class="login-btn">Login</button>
-                <img id="twitchPDP" class="twitch-pdp" src alt="Twitch Profile"
-                    style="display:none;">
+                <div id="userMenu" class="user-menu" style="display:none;">
+                    <img id="twitchPDP" class="twitch-pdp" src alt="Twitch Profile">
+                    <div class="user-dropdown">
+                        <button onclick="window.location.href='/logout'">Se déconnecter</button>
+                    </div>
+                </div>
             </div>
         </div>
+
+        <!-- Section principale -->
+        <main class="main-content">
+            <div class="welcome-section">
+                <h1>Bienvenue sur Kiwi Twitch Bot</h1>
+                <p>Découvrez nos giveaways en cours et participez pour gagner des prix incroyables !</p>
+            </div>
+            
+            <!-- Section Giveaways -->
+            <section id="home-giveaways" class="home-giveaways-section">
+                <div class="loading">Chargement des giveaways...</div>
+            </section>
+        </main>
+
         <div class="footer">
             <div class="footer-left">
                 <h3 class="socials-h3">Réseaux sociaux</h3>

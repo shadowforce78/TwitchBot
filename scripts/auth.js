@@ -9,7 +9,7 @@ const axios = require('axios');
 
 const CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET;
-const REDIRECT_URI = process.env.TWITCH_REDIRECT_URI || 'http://localhost:3000/callback';
+const REDIRECT_URI = process.env.TWITCH_REDIRECT_URI || 'http://localhost:3003/callback';
 
 if (!CLIENT_ID || !CLIENT_SECRET) {
   console.error('[auth] TWITCH_CLIENT_ID et TWITCH_CLIENT_SECRET sont requis dans .env');
@@ -66,7 +66,7 @@ ${refresh ? `TWITCH_CHAT_REFRESH=${refresh}` : ''}</pre>
   }
 });
 
-const port = Number(new URL(REDIRECT_URI).port) || 3000;
+const port = Number(new URL(REDIRECT_URI).port) || 3003;
 app.listen(port, () => {
   console.log(`[auth] Serveur OAuth sur ${REDIRECT_URI}`);
   console.log('[auth] Ouvrez cette URL dans votre navigateur si cela ne se lance pas automatiquement: ' + REDIRECT_URI.replace('/callback','/'));

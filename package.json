@@ -21,6 +21,7 @@
     "dotenv": "^16.4.5",
     "express": "^4.19.2",
     "express-session": "^1.18.0",
+    "mysql2": "^3.15.0",
     "nodemon": "^3.1.10",
     "tmi.js": "^1.8.5"
   }

@@ -6,6 +6,7 @@ const bodyParser = require('body-parser');
 const session = require('express-session');
 const axios = require('axios');
 const { join } = require('path');
+const DatabaseManager = require('../src/database/mysql');
 
 const PORT = process.env.WEB_PORT || 3003;
 const CLIENT_ID = process.env.TWITCH_CLIENT_ID;
@@ -17,7 +18,7 @@ const WHITELIST = (process.env.PANEL_WHITELIST || '')
 	.toLowerCase()
 	.split(/[\s,]+/)
 	.filter(Boolean);
-const OAUTH_REDIRECT = `${BASE_URL}/oauth/callback`;
+const OAUTH_REDIRECT = `${BASE_URL}/callback`;
 
 const app = express();
 app.use(bodyParser.json());
@@ -51,7 +52,7 @@ app.get('/login', (req, res) => {
 });
 
 // Callback OAuth
-app.get('/oauth/callback', async (req, res) => {
+app.get('/callback', async (req, res) => {
 	const code = req.query.code;
 	if (!code) return res.status(400).send('Code OAuth manquant');
 	try {
@@ -123,10 +124,8 @@ app.get('/oauth/callback', async (req, res) => {
 			isWhitelisted
 		};
 
-		if (!(isAuthorized || isWhitelisted)) {
-			return res.redirect('/no-access');
-		}
-		res.redirect('/panel');
+		// Tous les utilisateurs connectés vont à la homepage
+		res.redirect('/');
 	} catch (err) {
 		console.error('[oauth] Erreur callback', err?.response?.data || err.message);
 		res.status(500).send('Erreur OAuth');
@@ -137,7 +136,7 @@ app.get('/no-access', (req, res) => {
 	res.send('<h1>Accès refusé</h1><p>Vous devez être modérateur de la chaîne pour accéder au panneau.</p><a href="/">Retour</a>');
 });
 
-// Middleware auth panel
+// Middleware auth panel - uniquement pour les administrateurs
 function requireAccess(req, res, next) {
 	if (!req.session.user) return res.redirect('/');
 	if (!(req.session.user.isAuthorized || req.session.user.isWhitelisted)) return res.redirect('/no-access');
@@ -172,15 +171,15 @@ app.get('/api/debug-auth', (req, res) => {
 });
 
 // Route temporaire pour forcer l'ajout à la whitelist (à supprimer en production)
-app.get('/api/force-whitelist', (req, res) => {
-	if (req.session.user) {
-		req.session.user.isWhitelisted = true;
-		req.session.user.isAuthorized = true;
-		res.json({ success: true, message: `${req.session.user.login} ajouté à la whitelist temporairement` });
-	} else {
-		res.status(401).json({ error: 'Not logged in' });
-	}
-});
+// app.get('/api/force-whitelist', (req, res) => {
+// 	if (req.session.user) {
+// 		req.session.user.isWhitelisted = true;
+// 		req.session.user.isAuthorized = true;
+// 		res.json({ success: true, message: `${req.session.user.login} ajouté à la whitelist temporairement` });
+// 	} else {
+// 		res.status(401).json({ error: 'Not logged in' });
+// 	}
+// });
 
 // Endpoint pour envoyer un message via le bot (placeholder - nécessite intégration avec instance du bot)
 app.post('/api/chat/send', async (req, res) => {
@@ -198,6 +197,13 @@ app.post('/api/chat/send', async (req, res) => {
 });
 
 app.post('/logout', (req, res) => {
+	req.session.destroy(() => {
+		res.redirect('/');
+	});
+});
+
+// GET logout pour redirection directe (utilisé par les boutons de déconnexion)
+app.get('/logout', (req, res) => {
 	req.session.destroy(() => {
 		res.redirect('/');
 	});
@@ -438,6 +444,338 @@ app.delete('/api/commands/:name', (req, res) => {
 		console.error('[api] Error deleting command:', e);
 		res.status(500).json({ error: 'internal' });
 	}
+});
+
+// ==== API GIVEAWAYS ====
+
+// Middleware pour vérifier l'authentification
+const requireAuth = (req, res, next) => {
+	if (!req.session.user) {
+		return res.status(401).json({ error: 'unauthorized', message: 'Connexion requise' });
+	}
+	next();
+};
+
+// Middleware pour vérifier les permissions admin
+const requireAdmin = (req, res, next) => {
+	if (!req.session.user || !(req.session.user.isAuthorized || req.session.user.isWhitelisted)) {
+		return res.status(403).json({ error: 'forbidden', message: 'Permissions admin requises' });
+	}
+	next();
+};
+
+// Route pour vérifier l'auth (utilisée par le frontend)
+app.get('/api/auth/check', (req, res) => {
+	if (!req.session.user) {
+		return res.json({ authenticated: false });
+	}
+	
+	const { id, login, displayName, profileImage, isAuthorized, isWhitelisted } = req.session.user;
+	res.json({ 
+		authenticated: true,
+		user: {
+			id,
+			login,
+			display_name: displayName,
+			profile_image_url: profileImage
+		},
+		isWhitelisted: isWhitelisted || false,
+		isBroadcaster: login === CHANNEL_LOGIN
+	});
+});
+
+// GET /api/giveaways - Récupérer tous les giveaways actifs
+app.get('/api/giveaways', async (req, res) => {
+	try {
+		const db = new DatabaseManager();
+		const giveaways = await db.getActiveGiveaways();
+		
+		// Si l'utilisateur est connecté, ajouter l'état de participation
+		if (req.session.user) {
+			const userId = req.session.user.id;
+			
+			// Créer l'utilisateur s'il n'existe pas
+			await db.createUser(userId, req.session.user.login, req.session.user.displayName);
+			
+			// Vérifier les participations
+			for (let giveaway of giveaways) {
+				giveaway.is_participating = await db.isUserParticipating(giveaway.id, userId);
+				giveaway.participant_count = await db.getParticipantCount(giveaway.id);
+			}
+		} else {
+			// Ajouter le nombre de participants sans l'état de participation
+			for (let giveaway of giveaways) {
+				giveaway.is_participating = false;
+				giveaway.participant_count = await db.getParticipantCount(giveaway.id);
+			}
+		}
+		
+		await db.close();
+		res.json(giveaways);
+	} catch (error) {
+		console.error('Erreur lors de la récupération des giveaways:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
+	}
+});
+
+// POST /api/giveaways - Créer un nouveau giveaway (admin uniquement)
+app.post('/api/giveaways', requireAuth, requireAdmin, async (req, res) => {
+	try {
+		const { titre, description, image, prix, nb_reward, cashprize, date_tirage } = req.body;
+		
+		if (!titre || titre.trim().length === 0) {
+			return res.status(400).json({ error: 'validation', message: 'Le titre est requis' });
+		}
+
+		const giveawayData = {
+			titre: titre.trim(),
+			description: description || null,
+			image: image || null,
+			prix: prix || null,
+			nb_reward: nb_reward || 1,
+			cashprize: cashprize || 0.00,
+			date_tirage: date_tirage || null
+		};
+
+		const db = new DatabaseManager();
+		const giveawayId = await db.createGiveaway(giveawayData);
+		
+		await db.close();
+		
+		res.status(201).json({ 
+			success: true, 
+			id: giveawayId,
+			message: 'Giveaway créé avec succès'
+		});
+	} catch (error) {
+		console.error('Erreur lors de la création du giveaway:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
+	}
+});
+
+// POST /api/giveaways/:id/participate - Participer à un giveaway
+app.post('/api/giveaways/:id/participate', requireAuth, async (req, res) => {
+	try {
+		const giveawayId = parseInt(req.params.id);
+		const userId = req.session.user.id;
+		
+		if (isNaN(giveawayId)) {
+			return res.status(400).json({ error: 'validation', message: 'ID de giveaway invalide' });
+		}
+
+		const db = new DatabaseManager();
+		
+		// Vérifier que le giveaway existe et est ouvert
+		const giveaways = await db.getActiveGiveaways();
+		const giveaway = giveaways.find(g => g.id === giveawayId && g.status === 'ouvert');
+		
+		if (!giveaway) {
+			await db.close();
+			return res.status(404).json({ error: 'not_found', message: 'Giveaway non trouvé ou fermé' });
+		}
+		
+		// Créer l'utilisateur s'il n'existe pas
+		await db.createUser(userId, req.session.user.login, req.session.user.displayName);
+		
+		// Vérifier si déjà participant
+		const isParticipating = await db.isUserParticipating(giveawayId, userId);
+		if (isParticipating) {
+			await db.close();
+			return res.status(409).json({ error: 'already_participating', message: 'Vous participez déjà à ce giveaway' });
+		}
+		
+		// Ajouter la participation
+		await db.addParticipation(giveawayId, userId);
+		
+		await db.close();
+		
+		res.json({ 
+			success: true,
+			message: 'Participation enregistrée avec succès'
+		});
+	} catch (error) {
+		console.error('Erreur lors de la participation:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
+	}
+});
+
+// DELETE /api/giveaways/:id/leave - Quitter un giveaway
+app.delete('/api/giveaways/:id/leave', requireAuth, async (req, res) => {
+	try {
+		const giveawayId = parseInt(req.params.id);
+		const userId = req.session.user.id;
+		
+		if (isNaN(giveawayId)) {
+			return res.status(400).json({ error: 'validation', message: 'ID de giveaway invalide' });
+		}
+
+		const db = new DatabaseManager();
+		
+		// Vérifier la participation
+		const isParticipating = await db.isUserParticipating(giveawayId, userId);
+		if (!isParticipating) {
+			await db.close();
+			return res.status(404).json({ error: 'not_participating', message: 'Vous ne participez pas à ce giveaway' });
+		}
+		
+		// Retirer la participation
+		await db.removeParticipation(giveawayId, userId);
+		
+		await db.close();
+		
+		res.json({ 
+			success: true,
+			message: 'Participation annulée avec succès'
+		});
+	} catch (error) {
+		console.error('Erreur lors de l\'annulation:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
+	}
+});
+
+// PUT /api/giveaways/:id/close - Fermer un giveaway (admin uniquement)
+app.put('/api/giveaways/:id/close', requireAuth, requireAdmin, async (req, res) => {
+	try {
+		const giveawayId = parseInt(req.params.id);
+		
+		if (isNaN(giveawayId)) {
+			return res.status(400).json({ error: 'validation', message: 'ID de giveaway invalide' });
+		}
+
+		const db = new DatabaseManager();
+		
+		// Vérifier que le giveaway existe
+		const giveaways = await db.getActiveGiveaways();
+		const giveaway = giveaways.find(g => g.id === giveawayId);
+		
+		if (!giveaway) {
+			await db.close();
+			return res.status(404).json({ error: 'not_found', message: 'Giveaway non trouvé' });
+		}
+		
+		if (giveaway.status === 'ferme') {
+			await db.close();
+			return res.status(400).json({ error: 'already_closed', message: 'Ce giveaway est déjà fermé' });
+		}
+		
+		// Fermer le giveaway
+		await db.closeGiveaway(giveawayId);
+		
+		await db.close();
+		
+		res.json({ 
+			success: true,
+			message: 'Giveaway fermé avec succès'
+		});
+	} catch (error) {
+		console.error('Erreur lors de la fermeture:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
+	}
+});
+
+// ==== API WEBHOOK DATA (LECTURE SEULE) ====
+
+// GET /api/webhook/users - Consulter les utilisateurs (admin uniquement)
+app.get('/api/webhook/users', requireAuth, requireAdmin, async (req, res) => {
+	try {
+		const page = parseInt(req.query.page) || 1;
+		const limit = parseInt(req.query.limit) || 50;
+		const offset = (page - 1) * limit;
+
+		const db = new DatabaseManager();
+		
+		const users = await db.getAllUsers(limit, offset);
+		const totalCount = await db.getUsersCount();
+		
+		await db.close();
+		
+		res.json({
+			users,
+			pagination: {
+				page,
+				limit,
+				total: totalCount,
+				pages: Math.ceil(totalCount / limit)
+			}
+		});
+	} catch (error) {
+		console.error('Erreur lors de la récupération des utilisateurs:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
+	}
+});
+
+// GET /api/webhook/passes - Consulter les passes (admin uniquement)
+app.get('/api/webhook/passes', requireAuth, requireAdmin, async (req, res) => {
+	try {
+		const page = parseInt(req.query.page) || 1;
+		const limit = parseInt(req.query.limit) || 50;
+		const offset = (page - 1) * limit;
+
+		const db = new DatabaseManager();
+		
+		const passes = await db.getAllPasses(limit, offset);
+		const totalCount = await db.getPassesCount();
+		const validCount = await db.getValidPassesCount();
+		
+		await db.close();
+		
+		res.json({
+			passes,
+			stats: {
+				total: totalCount,
+				valid: validCount,
+				invalid: totalCount - validCount
+			},
+			pagination: {
+				page,
+				limit,
+				total: totalCount,
+				pages: Math.ceil(totalCount / limit)
+			}
+		});
+	} catch (error) {
+		console.error('Erreur lors de la récupération des passes:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
+	}
+});
+
+// GET /api/webhook/stats - Statistiques générales (admin uniquement)
+app.get('/api/webhook/stats', requireAuth, requireAdmin, async (req, res) => {
+	try {
+		const db = new DatabaseManager();
+		
+		const usersCount = await db.getUsersCount();
+		const passesCount = await db.getPassesCount();
+		const validPassesCount = await db.getValidPassesCount();
+		
+		await db.close();
+		
+		res.json({
+			users: {
+				total: usersCount
+			},
+			passes: {
+				total: passesCount,
+				valid: validPassesCount,
+				invalid: passesCount - validPassesCount,
+				validPercentage: passesCount > 0 ? Math.round((validPassesCount / passesCount) * 100) : 0
+			}
+		});
+	} catch (error) {
+		console.error('Erreur lors de la récupération des statistiques:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
+	}
+});
+
+// Route pour le panel giveaway - nécessite une authentification
+app.get('/giveaway', (req, res) => {
+	// Vérifier si l'utilisateur est connecté
+	if (!req.session.user) {
+		// Rediriger vers la page de connexion
+		return res.redirect('/login');
+	}
+	
+	res.sendFile(join(__dirname, 'public', 'giveaway.html'));
 });
 
 module.exports = {

@@ -384,3 +384,387 @@ function escapeHtml(text) {
   div.textContent = text;
   return div.innerHTML;
 }
+
+// ========== GESTION DES GIVEAWAYS ==========
+
+// Fonction pour afficher/cacher le formulaire de création de giveaway
+function showAddGiveawayForm() {
+  document.getElementById('add-giveaway-form').style.display = 'block';
+  document.getElementById('new-giveaway-title').focus();
+}
+
+function hideAddGiveawayForm() {
+  document.getElementById('add-giveaway-form').style.display = 'none';
+  // Reset des champs
+  document.getElementById('new-giveaway-title').value = '';
+  document.getElementById('new-giveaway-description').value = '';
+  document.getElementById('new-giveaway-image').value = '';
+  document.getElementById('btn-create-giveaway').style.display = 'none';
+}
+
+// Fonction pour vérifier les champs obligatoires du giveaway
+function checkNewGiveawayFields() {
+  const title = document.getElementById('new-giveaway-title').value.trim();
+  const description = document.getElementById('new-giveaway-description').value.trim();
+  const createBtn = document.getElementById('btn-create-giveaway');
+  
+  if (title && description) {
+    createBtn.style.display = 'inline-block';
+  } else {
+    createBtn.style.display = 'none';
+  }
+}
+
+// Fonction pour créer un giveaway
+async function createGiveaway() {
+  const title = document.getElementById('new-giveaway-title').value.trim();
+  const description = document.getElementById('new-giveaway-description').value.trim();
+  const imageUrl = document.getElementById('new-giveaway-image').value.trim();
+
+  if (!title || !description) {
+    showNotification('Le titre et la description sont requis', 'error');
+    return;
+  }
+
+  try {
+    const response = await fetch('/api/giveaways', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        title: title,
+        description: description,
+        image_url: imageUrl || null
+      })
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      showNotification('Giveaway créé avec succès !', 'success');
+      hideAddGiveawayForm();
+      loadGiveaways(); // Recharger la liste
+    } else {
+      showNotification(data.message || 'Erreur lors de la création', 'error');
+    }
+  } catch (error) {
+    console.error('Erreur création giveaway:', error);
+    showNotification('Erreur de connexion', 'error');
+  }
+}
+
+// Fonction pour charger les giveaways
+async function loadGiveaways() {
+  try {
+    const response = await fetch('/api/giveaways');
+    if (!response.ok) throw new Error('Erreur chargement');
+    
+    const giveaways = await response.json();
+    renderGiveaways(giveaways);
+  } catch (error) {
+    console.error('Erreur chargement giveaways:', error);
+    document.getElementById('giveaways-panel').innerHTML = 
+      '<p style="color: #f44336; text-align: center;">Erreur lors du chargement des giveaways</p>';
+  }
+}
+
+// Fonction pour afficher les giveaways
+function renderGiveaways(giveaways) {
+  const panel = document.getElementById('giveaways-panel');
+  
+  if (!Array.isArray(giveaways) || giveaways.length === 0) {
+    panel.innerHTML = '<p style="color: #888; text-align: center;">Aucun giveaway actif</p>';
+    return;
+  }
+
+  panel.innerHTML = giveaways.map(giveaway => `
+    <div class="giveaway-item" style="border: 1px solid #555; border-radius: 6px; padding: 15px; margin-bottom: 10px; background: #2a2a2a;">
+      <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+        <div style="flex: 1;">
+          <h4 style="color: #FFC69B; margin: 0 0 5px 0;">${escapeHtml(giveaway.title)}</h4>
+          <p style="color: #bbb; margin: 0; font-size: 0.9rem;">${escapeHtml(giveaway.description || '')}</p>
+        </div>
+        <span class="status-badge ${giveaway.status}" style="padding: 4px 12px; border-radius: 12px; font-size: 0.8rem; font-weight: 500; white-space: nowrap; margin-left: 10px;">
+          ${giveaway.status.toUpperCase()}
+        </span>
+      </div>
+      
+      <div style="display: flex; justify-content: space-between; align-items: center; font-size: 0.9rem; color: #888;">
+        <span>👥 ${giveaway.participant_count || 0} participant(s)</span>
+        <span>📅 ${formatDate(giveaway.created_at)}</span>
+      </div>
+      
+      ${giveaway.status === 'ouvert' ? `
+        <div style="margin-top: 15px;">
+          <button class="btn-danger" onclick="closeGiveaway(${giveaway.id})" style="background: #f44336; color: white; border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer;">
+            Fermer le giveaway
+          </button>
+        </div>
+      ` : ''}
+    </div>
+  `).join('');
+}
+
+// Fonction pour fermer un giveaway
+async function closeGiveaway(giveawayId) {
+  if (!confirm('Êtes-vous sûr de vouloir fermer ce giveaway ?')) {
+    return;
+  }
+
+  try {
+    const response = await fetch(`/api/giveaways/${giveawayId}/close`, {
+      method: 'PUT'
+    });
+
+    const data = await response.json();
+
+    if (response.ok) {
+      showNotification('Giveaway fermé avec succès', 'success');
+      loadGiveaways(); // Recharger la liste
+    } else {
+      showNotification(data.message || 'Erreur lors de la fermeture', 'error');
+    }
+  } catch (error) {
+    console.error('Erreur fermeture giveaway:', error);
+    showNotification('Erreur de connexion', 'error');
+  }
+}
+
+// Fonction pour formater une date
+function formatDate(dateString) {
+  const date = new Date(dateString);
+  return date.toLocaleDateString('fr-FR', {
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit'
+  });
+}
+
+// Charger les giveaways au démarrage
+document.addEventListener('DOMContentLoaded', () => {
+  // Attendre un peu que l'auth soit vérifiée
+  setTimeout(() => {
+    loadGiveaways();
+    loadWebhookStats();
+  }, 1000);
+});
+
+// ========== GESTION DES DONNÉES WEBHOOK ==========
+
+let currentWebhookTab = 'stats';
+let currentUsersPage = 1;
+let currentPassesPage = 1;
+
+// Fonction pour basculer entre les onglets webhook
+function showWebhookTab(tab) {
+  // Masquer tous les contenus d'onglet
+  document.querySelectorAll('.tab-content').forEach(content => {
+    content.style.display = 'none';
+  });
+  
+  // Désactiver tous les boutons d'onglet
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.classList.remove('active');
+  });
+  
+  // Afficher le contenu sélectionné
+  document.getElementById(`webhook-${tab}`).style.display = 'block';
+  document.getElementById(`tab-${tab}`).classList.add('active');
+  
+  currentWebhookTab = tab;
+  
+  // Charger les données selon l'onglet
+  switch(tab) {
+    case 'stats':
+      loadWebhookStats();
+      break;
+    case 'users':
+      loadWebhookUsers(1);
+      break;
+    case 'passes':
+      loadWebhookPasses(1);
+      break;
+  }
+}
+
+// Fonction pour charger les statistiques webhook
+async function loadWebhookStats() {
+  try {
+    const response = await fetch('/api/webhook/stats');
+    if (!response.ok) throw new Error('Erreur chargement stats');
+    
+    const stats = await response.json();
+    renderWebhookStats(stats);
+  } catch (error) {
+    console.error('Erreur chargement stats webhook:', error);
+    document.getElementById('webhook-stats-content').innerHTML = 
+      '<p style="color: #f44336; text-align: center;">Erreur lors du chargement des statistiques</p>';
+  }
+}
+
+// Fonction pour afficher les statistiques
+function renderWebhookStats(stats) {
+  const content = document.getElementById('webhook-stats-content');
+  
+  content.innerHTML = `
+    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 20px;">
+      <div class="stat-card">
+        <h4 style="color: #4CAF50; margin: 0 0 10px 0;">👤 Utilisateurs</h4>
+        <div class="stat-number">${stats.users.total}</div>
+        <div class="stat-label">Total d'utilisateurs</div>
+      </div>
+      
+      <div class="stat-card">
+        <h4 style="color: #FF9800; margin: 0 0 10px 0;">🎫 Passes</h4>
+        <div class="stat-number">${stats.passes.total}</div>
+        <div class="stat-label">Total de passes</div>
+      </div>
+      
+      <div class="stat-card">
+        <h4 style="color: #2196F3; margin: 0 0 10px 0;">✅ Passes Valides</h4>
+        <div class="stat-number">${stats.passes.valid}</div>
+        <div class="stat-label">${stats.passes.validPercentage}% du total</div>
+      </div>
+      
+      <div class="stat-card">
+        <h4 style="color: #f44336; margin: 0 0 10px 0;">❌ Passes Expirées</h4>
+        <div class="stat-number">${stats.passes.invalid}</div>
+        <div class="stat-label">${100 - stats.passes.validPercentage}% du total</div>
+      </div>
+    </div>
+    
+    <div style="margin-top: 20px; text-align: center; color: #888; font-style: italic;">
+      📡 Ces données sont automatiquement synchronisées via webhook
+    </div>
+  `;
+}
+
+// Fonction pour charger les utilisateurs
+async function loadWebhookUsers(page = 1) {
+  currentUsersPage = page;
+  try {
+    const response = await fetch(`/api/webhook/users?page=${page}&limit=20`);
+    if (!response.ok) throw new Error('Erreur chargement users');
+    
+    const data = await response.json();
+    renderWebhookUsers(data);
+  } catch (error) {
+    console.error('Erreur chargement users webhook:', error);
+    document.getElementById('webhook-users-content').innerHTML = 
+      '<p style="color: #f44336; text-align: center;">Erreur lors du chargement des utilisateurs</p>';
+  }
+}
+
+// Fonction pour afficher les utilisateurs
+function renderWebhookUsers(data) {
+  const content = document.getElementById('webhook-users-content');
+  
+  if (!data.users || data.users.length === 0) {
+    content.innerHTML = '<p style="color: #888; text-align: center;">Aucun utilisateur trouvé</p>';
+    return;
+  }
+
+  const usersHtml = data.users.map(user => `
+    <div class="webhook-item">
+      <div class="webhook-item-header">
+        <span class="webhook-item-title">👤 ${escapeHtml(user.username)}</span>
+        <span class="webhook-item-id">ID: ${user.id_twitch}</span>
+      </div>
+      <div class="webhook-item-details">
+        <span class="webhook-detail">Ajouté automatiquement par webhook</span>
+      </div>
+    </div>
+  `).join('');
+
+  content.innerHTML = usersHtml;
+  renderPagination('users', data.pagination);
+}
+
+// Fonction pour charger les passes
+async function loadWebhookPasses(page = 1) {
+  currentPassesPage = page;
+  try {
+    const response = await fetch(`/api/webhook/passes?page=${page}&limit=20`);
+    if (!response.ok) throw new Error('Erreur chargement passes');
+    
+    const data = await response.json();
+    renderWebhookPasses(data);
+  } catch (error) {
+    console.error('Erreur chargement passes webhook:', error);
+    document.getElementById('webhook-passes-content').innerHTML = 
+      '<p style="color: #f44336; text-align: center;">Erreur lors du chargement des passes</p>';
+  }
+}
+
+// Fonction pour afficher les passes
+function renderWebhookPasses(data) {
+  const content = document.getElementById('webhook-passes-content');
+  
+  if (!data.passes || data.passes.length === 0) {
+    content.innerHTML = '<p style="color: #888; text-align: center;">Aucun passe trouvé</p>';
+    return;
+  }
+
+  const passesHtml = data.passes.map(pass => `
+    <div class="webhook-item">
+      <div class="webhook-item-header">
+        <span class="webhook-item-title">🎫 ${escapeHtml(pass.username || 'Utilisateur inconnu')}</span>
+        <div>
+          <span class="pass-status ${pass.valide ? 'valid' : 'invalid'}">${pass.valide ? '✅ VALIDE' : '❌ EXPIRÉ'}</span>
+        </div>
+      </div>
+      <div class="webhook-item-details">
+        <span class="webhook-detail">ID Twitch: ${pass.id_twitch}</span>
+        <span class="webhook-detail">Statut: ${pass.valide ? 'Actif' : 'Inactif'}</span>
+      </div>
+    </div>
+  `).join('');
+
+  content.innerHTML = `
+    <div style="margin-bottom: 15px; padding: 10px; background: #2a2a2a; border-radius: 6px;">
+      <div style="display: flex; justify-content: space-between; font-size: 0.9rem; color: #bbb;">
+        <span>📊 Total: ${data.stats.total}</span>
+        <span>✅ Valides: ${data.stats.valid}</span>
+        <span>❌ Expirés: ${data.stats.invalid}</span>
+      </div>
+    </div>
+    ${passesHtml}
+  `;
+  renderPagination('passes', data.pagination);
+}
+
+// Fonction pour afficher la pagination
+function renderPagination(type, pagination) {
+  const container = document.getElementById(`${type}-pagination`);
+  
+  if (pagination.pages <= 1) {
+    container.innerHTML = '';
+    return;
+  }
+
+  let paginationHtml = '';
+  
+  // Bouton précédent
+  if (pagination.page > 1) {
+    paginationHtml += `<button class="pagination-btn" onclick="load${type === 'users' ? 'WebhookUsers' : 'WebhookPasses'}(${pagination.page - 1})">‹ Précédent</button>`;
+  }
+  
+  // Numéros de page
+  const startPage = Math.max(1, pagination.page - 2);
+  const endPage = Math.min(pagination.pages, pagination.page + 2);
+  
+  for (let i = startPage; i <= endPage; i++) {
+    const isActive = i === pagination.page;
+    paginationHtml += `<button class="pagination-btn ${isActive ? 'active' : ''}" onclick="load${type === 'users' ? 'WebhookUsers' : 'WebhookPasses'}(${i})">${i}</button>`;
+  }
+  
+  // Bouton suivant
+  if (pagination.page < pagination.pages) {
+    paginationHtml += `<button class="pagination-btn" onclick="load${type === 'users' ? 'WebhookUsers' : 'WebhookPasses'}(${pagination.page + 1})">Suivant ›</button>`;
+  }
+  
+  container.innerHTML = paginationHtml;
+}

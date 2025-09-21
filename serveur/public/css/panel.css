@@ -324,3 +324,248 @@ h1 {
     margin: 10px 0 12px 0;
   }
 }
+
+/* Styles pour les giveaways */
+.giveaway-item {
+  transition: all 0.2s ease;
+}
+
+.giveaway-item:hover {
+  border-color: #FF4BBA !important;
+  box-shadow: 0 2px 8px rgba(255, 75, 186, 0.2);
+}
+
+.status-badge {
+  text-transform: uppercase;
+  font-weight: 600;
+}
+
+.status-badge.ouvert {
+  background: #4CAF50;
+  color: white;
+}
+
+.status-badge.ferme {
+  background: #f44336;
+  color: white;
+}
+
+.status-badge.en_cours {
+  background: #FF9800;
+  color: white;
+}
+
+.btn-danger {
+  transition: all 0.2s ease;
+}
+
+.btn-danger:hover {
+  background: #d32f2f !important;
+  transform: translateY(-1px);
+}
+
+.btn-secondary {
+  background: #666;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #777;
+}
+
+/* Animation de chargement pour giveaways */
+.loading {
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
+
+/* Styles pour les données webhook */
+.tab-btn {
+  background: #333;
+  color: #E0E0DF;
+  border: none;
+  padding: 10px 20px;
+  margin-right: 10px;
+  border-radius: 6px 6px 0 0;
+  cursor: pointer;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+  background: #444;
+}
+
+.tab-btn.active {
+  background: #FF4BBA;
+  color: white;
+}
+
+.tab-content {
+  border-top: 2px solid #FF4BBA;
+  padding-top: 20px;
+}
+
+.stat-card {
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 8px;
+  padding: 20px;
+  text-align: center;
+  transition: all 0.2s ease;
+}
+
+.stat-card:hover {
+  border-color: #FF4BBA;
+  box-shadow: 0 2px 8px rgba(255, 75, 186, 0.2);
+}
+
+.stat-number {
+  font-size: 2.5rem;
+  font-weight: bold;
+  color: #FFC69B;
+  margin: 10px 0;
+}
+
+.stat-label {
+  color: #bbb;
+  font-size: 0.9rem;
+}
+
+.webhook-item {
+  background: #2a2a2a;
+  border: 1px solid #444;
+  border-radius: 6px;
+  padding: 15px;
+  margin-bottom: 10px;
+  transition: all 0.2s ease;
+}
+
+.webhook-item:hover {
+  border-color: #FF4BBA;
+  box-shadow: 0 2px 8px rgba(255, 75, 186, 0.1);
+}
+
+.webhook-item-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.webhook-item-title {
+  font-weight: 600;
+  color: #FFC69B;
+  flex: 1;
+  min-width: 200px;
+}
+
+.webhook-item-date {
+  color: #888;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.webhook-item-id {
+  color: #888;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  font-family: monospace;
+}
+
+.webhook-item-details {
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+}
+
+.webhook-detail {
+  color: #bbb;
+  font-size: 0.9rem;
+}
+
+.pass-status {
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  margin-right: 10px;
+}
+
+.pass-status.valid {
+  background: #4CAF50;
+  color: white;
+}
+
+.pass-status.invalid {
+  background: #f44336;
+  color: white;
+}
+
+.pagination {
+  display: flex;
+  justify-content: center;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.pagination-btn {
+  background: #333;
+  color: #E0E0DF;
+  border: none;
+  padding: 8px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+}
+
+.pagination-btn:hover {
+  background: #444;
+}
+
+.pagination-btn.active {
+  background: #FF4BBA;
+  color: white;
+}
+
+/* Responsive pour webhook */
+@media (max-width: 768px) {
+  .tab-btn {
+    margin-right: 5px;
+    margin-bottom: 5px;
+    padding: 8px 15px;
+    font-size: 0.9rem;
+  }
+  
+  .stat-number {
+    font-size: 2rem;
+  }
+  
+  .webhook-item-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .webhook-item-title {
+    min-width: unset;
+  }
+  
+  .pagination-btn {
+    padding: 6px 10px;
+    font-size: 0.8rem;
+  }
+}
