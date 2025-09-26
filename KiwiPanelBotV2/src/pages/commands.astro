@@ -1,0 +1,839 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// Simuler les commandes disponibles basées sur les fichiers existants
+const commands = [
+	{
+		name: "!aquarium",
+		description: "Gérez votre aquarium virtuel, ajoutez des poissons et surveillez leur état.",
+		category: "Jeu",
+		usage: "!aquarium [add|remove|list|feed]",
+		examples: ["!aquarium", "!aquarium add poisson-clown", "!aquarium feed"],
+		cooldown: "30 secondes",
+		permissions: "Tous",
+		emoji: "🐠"
+	},
+	{
+		name: "!discord",
+		description: "Obtenez le lien vers le serveur Discord de la communauté.",
+		category: "Social",
+		usage: "!discord",
+		examples: ["!discord"],
+		cooldown: "10 secondes",
+		permissions: "Tous",
+		emoji: "💬"
+	},
+	{
+		name: "!giveaway", 
+		description: "Participez aux giveaways en cours ou consultez les concours disponibles.",
+		category: "Événement",
+		usage: "!giveaway [participate|list|info]",
+		examples: ["!giveaway", "!giveaway participate 1", "!giveaway list"],
+		cooldown: "5 secondes",
+		permissions: "Followers",
+		emoji: "🎁"
+	},
+	{
+		name: "!help",
+		description: "Affiche la liste de toutes les commandes disponibles et leur utilisation.",
+		category: "Utilitaire",
+		usage: "!help [command]",
+		examples: ["!help", "!help aquarium"],
+		cooldown: "15 secondes", 
+		permissions: "Tous",
+		emoji: "❓"
+	},
+	{
+		name: "!socials",
+		description: "Consultez tous les réseaux sociaux du streamer et les liens utiles.",
+		category: "Social",
+		usage: "!socials",
+		examples: ["!socials"],
+		cooldown: "20 secondes",
+		permissions: "Tous",
+		emoji: "🔗"
+	},
+	{
+		name: "!sub",
+		description: "Informations sur les abonnements à la chaîne et leurs avantages.",
+		category: "Info",
+		usage: "!sub",
+		examples: ["!sub"],
+		cooldown: "30 secondes",
+		permissions: "Tous",
+		emoji: "👑"
+	}
+];
+
+const categories = [...new Set(commands.map(cmd => cmd.category))];
+
+// Statistiques des commandes
+const commandStats = {
+	totalCommands: commands.length,
+	mostUsed: "!aquarium",
+	usageToday: 247,
+	averageCooldown: "18 secondes"
+};
+---
+
+<Layout title="Commandes - TwitchBot">
+	<div class="commands-header">
+		<h1 class="page-title">📋 Commandes disponibles</h1>
+		<p class="page-subtitle">
+			Découvrez toutes les commandes que vous pouvez utiliser dans le chat Twitch
+		</p>
+		
+		<div class="commands-stats">
+			<div class="stat-item">
+				<span class="stat-number">{commandStats.totalCommands}</span>
+				<span class="stat-label">Commandes disponibles</span>
+			</div>
+			<div class="stat-item">
+				<span class="stat-number">{commandStats.usageToday}</span>
+				<span class="stat-label">Utilisations aujourd'hui</span>
+			</div>
+			<div class="stat-item">
+				<span class="stat-number">{commandStats.mostUsed}</span>
+				<span class="stat-label">Commande la plus populaire</span>
+			</div>
+		</div>
+	</div>
+
+	<!-- Search and Filter -->
+	<div class="commands-controls">
+		<div class="search-box">
+			<input 
+				type="text" 
+				id="commandSearch" 
+				class="search-input" 
+				placeholder="🔍 Rechercher une commande..." 
+				onkeyup="filterCommands()"
+			/>
+		</div>
+		
+		<div class="category-filters">
+			<button class="filter-btn active" onclick="filterByCategory('all')">
+				📋 Toutes
+			</button>
+			{categories.map(category => (
+				<button class="filter-btn" onclick={`filterByCategory('${category}')`}>
+					{category === 'Jeu' ? '🎮' : 
+					 category === 'Social' ? '🌐' : 
+					 category === 'Événement' ? '🎉' : 
+					 category === 'Info' ? 'ℹ️' : 
+					 category === 'Utilitaire' ? '🔧' : '📝'} 
+					{category}
+				</button>
+			))}
+		</div>
+	</div>
+
+	<!-- Commands Grid -->
+	<div class="commands-grid" id="commandsGrid">
+		{commands.map(command => (
+			<div class="command-card" data-category={command.category} data-name={command.name.toLowerCase()}>
+				<div class="command-header">
+					<div class="command-emoji">{command.emoji}</div>
+					<div class="command-title">
+						<h3>{command.name}</h3>
+						<span class="command-category">{command.category}</span>
+					</div>
+					<div class="command-permissions">
+						<span class={`permission-badge ${command.permissions === 'Tous' ? 'public' : 'restricted'}`}>
+							{command.permissions === 'Tous' ? '🌐' : '🔒'} {command.permissions}
+						</span>
+					</div>
+				</div>
+				
+				<div class="command-content">
+					<p class="command-description">{command.description}</p>
+					
+					<div class="command-usage">
+						<h4>📖 Utilisation:</h4>
+						<code class="usage-code">{command.usage}</code>
+					</div>
+					
+					<div class="command-examples">
+						<h4>💡 Exemples:</h4>
+						<div class="examples-list">
+							{command.examples.map(example => (
+								<code class="example-code">{example}</code>
+							))}
+						</div>
+					</div>
+					
+					<div class="command-meta">
+						<div class="meta-item">
+							<span class="meta-label">⏱️ Cooldown:</span>
+							<span class="meta-value">{command.cooldown}</span>
+						</div>
+						<div class="meta-item">
+							<span class="meta-label">🎯 Permissions:</span>
+							<span class="meta-value">{command.permissions}</span>
+						</div>
+					</div>
+				</div>
+				
+				<div class="command-actions">
+					<button class="btn btn-primary" onclick={`copyCommand('${command.name}')`}>
+						📋 Copier
+					</button>
+					<button class="btn btn-outline" onclick={`showCommandDetails('${command.name}')`}>
+						👁️ Détails
+					</button>
+				</div>
+			</div>
+		))}
+	</div>
+
+	<!-- No results message -->
+	<div id="noResults" class="no-results" style="display: none;">
+		<div class="no-results-icon">🔍</div>
+		<h3>Aucune commande trouvée</h3>
+		<p>Essayez de modifier votre recherche ou de changer de catégorie.</p>
+	</div>
+
+	<!-- Quick Guide -->
+	<section class="quick-guide">
+		<h2 class="section-title">🚀 Guide rapide</h2>
+		
+		<div class="guide-grid">
+			<div class="guide-card">
+				<div class="guide-icon">💬</div>
+				<h3>Comment utiliser les commandes</h3>
+				<p>Tapez simplement la commande dans le chat Twitch. Toutes les commandes commencent par un point d'exclamation (!).</p>
+			</div>
+			
+			<div class="guide-card">
+				<div class="guide-icon">⏱️</div>
+				<h3>Cooldowns</h3>
+				<p>Chaque commande a un temps de recharge pour éviter le spam. Respectez les cooldowns indiqués.</p>
+			</div>
+			
+			<div class="guide-card">
+				<div class="guide-icon">🔒</div>
+				<h3>Permissions</h3>
+				<p>Certaines commandes sont réservées aux followers, abonnés ou modérateurs. Vérifiez les permissions requises.</p>
+			</div>
+			
+			<div class="guide-card">
+				<div class="guide-icon">❓</div>
+				<h3>Besoin d'aide ?</h3>
+				<p>Utilisez la commande !help dans le chat ou contactez les modérateurs pour obtenir de l'assistance.</p>
+			</div>
+		</div>
+	</section>
+
+	<!-- Command Details Modal -->
+	<div id="commandModal" class="modal" style="display: none;">
+		<div class="modal-overlay" onclick="hideCommandDetails()"></div>
+		<div class="modal-content">
+			<div class="modal-header">
+				<h2 id="modalTitle">Détails de la commande</h2>
+				<button class="modal-close" onclick="hideCommandDetails()">✕</button>
+			</div>
+			<div class="modal-body" id="modalBody">
+				<!-- Content will be populated by JavaScript -->
+			</div>
+		</div>
+	</div>
+</Layout>
+
+<style>
+	.commands-header {
+		text-align: center;
+		margin-bottom: 3rem;
+	}
+
+	.page-title {
+		font-size: 2.5rem;
+		font-weight: 700;
+		margin-bottom: 0.5rem;
+		background: linear-gradient(135deg, var(--primary), var(--secondary));
+		-webkit-background-clip: text;
+		-webkit-text-fill-color: transparent;
+		background-clip: text;
+	}
+
+	.page-subtitle {
+		font-size: 1.125rem;
+		color: var(--text-secondary);
+		margin-bottom: 2rem;
+		max-width: 600px;
+		margin-left: auto;
+		margin-right: auto;
+	}
+
+	.commands-stats {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+		gap: 2rem;
+		max-width: 800px;
+		margin: 0 auto;
+	}
+
+	.stat-item {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		padding: 1.5rem;
+		text-align: center;
+		transition: all 0.3s ease;
+	}
+
+	.stat-item:hover {
+		border-color: var(--secondary);
+		transform: translateY(-2px);
+	}
+
+	.stat-number {
+		display: block;
+		font-size: 1.75rem;
+		font-weight: 700;
+		color: var(--secondary);
+		margin-bottom: 0.5rem;
+	}
+
+	.stat-label {
+		font-size: 0.9rem;
+		color: var(--text-secondary);
+	}
+
+	/* Commands Controls */
+	.commands-controls {
+		display: flex;
+		flex-direction: column;
+		gap: 1.5rem;
+		margin-bottom: 3rem;
+		align-items: center;
+	}
+
+	.search-box {
+		width: 100%;
+		max-width: 500px;
+	}
+
+	.search-input {
+		width: 100%;
+		padding: 1rem 1.5rem;
+		font-size: 1rem;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 50px;
+		color: var(--text-primary);
+		transition: all 0.3s ease;
+	}
+
+	.search-input:focus {
+		outline: none;
+		border-color: var(--secondary);
+		box-shadow: 0 0 0 3px rgba(255, 198, 155, 0.1);
+	}
+
+	.category-filters {
+		display: flex;
+		gap: 0.75rem;
+		flex-wrap: wrap;
+		justify-content: center;
+	}
+
+	.filter-btn {
+		padding: 0.75rem 1.5rem;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 25px;
+		color: var(--text-secondary);
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.3s ease;
+	}
+
+	.filter-btn:hover,
+	.filter-btn.active {
+		background: var(--secondary);
+		color: var(--background);
+		border-color: var(--secondary);
+		transform: translateY(-1px);
+	}
+
+	/* Commands Grid */
+	.commands-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+		gap: 2rem;
+		margin-bottom: 4rem;
+	}
+
+	.command-card {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 16px;
+		padding: 2rem;
+		transition: all 0.3s ease;
+		display: flex;
+		flex-direction: column;
+	}
+
+	.command-card:hover {
+		border-color: var(--secondary);
+		transform: translateY(-5px);
+		box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+	}
+
+	/* Command Header */
+	.command-header {
+		display: flex;
+		align-items: flex-start;
+		gap: 1rem;
+		margin-bottom: 1.5rem;
+	}
+
+	.command-emoji {
+		font-size: 2rem;
+		background: var(--surface-light);
+		width: 60px;
+		height: 60px;
+		border-radius: 12px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		flex-shrink: 0;
+	}
+
+	.command-title {
+		flex-grow: 1;
+	}
+
+	.command-title h3 {
+		font-size: 1.25rem;
+		color: var(--text-primary);
+		margin-bottom: 0.25rem;
+		font-family: 'Courier New', monospace;
+	}
+
+	.command-category {
+		font-size: 0.875rem;
+		color: var(--text-secondary);
+		background: var(--surface-light);
+		padding: 0.25rem 0.75rem;
+		border-radius: 12px;
+	}
+
+	.command-permissions {
+		flex-shrink: 0;
+	}
+
+	.permission-badge {
+		font-size: 0.75rem;
+		font-weight: 600;
+		padding: 0.5rem 0.75rem;
+		border-radius: 15px;
+	}
+
+	.permission-badge.public {
+		background: rgba(0, 245, 255, 0.2);
+		color: var(--success);
+	}
+
+	.permission-badge.restricted {
+		background: rgba(255, 215, 0, 0.2);
+		color: var(--warning);
+	}
+
+	/* Command Content */
+	.command-content {
+		flex-grow: 1;
+		margin-bottom: 2rem;
+	}
+
+	.command-description {
+		color: var(--text-secondary);
+		margin-bottom: 1.5rem;
+		line-height: 1.6;
+	}
+
+	.command-usage,
+	.command-examples {
+		margin-bottom: 1.5rem;
+	}
+
+	.command-usage h4,
+	.command-examples h4 {
+		font-size: 0.875rem;
+		color: var(--text-primary);
+		margin-bottom: 0.75rem;
+		font-weight: 600;
+	}
+
+	.usage-code {
+		display: block;
+		background: var(--surface-light);
+		padding: 0.75rem;
+		border-radius: 8px;
+		font-family: 'Courier New', monospace;
+		color: var(--secondary);
+		border-left: 3px solid var(--secondary);
+	}
+
+	.examples-list {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.example-code {
+		background: var(--surface-light);
+		padding: 0.5rem 0.75rem;
+		border-radius: 6px;
+		font-family: 'Courier New', monospace;
+		font-size: 0.875rem;
+		color: var(--text-primary);
+	}
+
+	.command-meta {
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 1rem;
+		padding: 1rem;
+		background: var(--surface-light);
+		border-radius: 8px;
+	}
+
+	.meta-item {
+		display: flex;
+		flex-direction: column;
+		gap: 0.25rem;
+	}
+
+	.meta-label {
+		font-size: 0.75rem;
+		color: var(--text-secondary);
+		font-weight: 500;
+	}
+
+	.meta-value {
+		font-size: 0.875rem;
+		color: var(--text-primary);
+		font-weight: 600;
+	}
+
+	/* Command Actions */
+	.command-actions {
+		display: flex;
+		gap: 0.75rem;
+	}
+
+	.command-actions .btn {
+		flex: 1;
+		font-size: 0.875rem;
+		padding: 0.75rem;
+	}
+
+	/* No Results */
+	.no-results {
+		text-align: center;
+		padding: 4rem 2rem;
+		color: var(--text-secondary);
+	}
+
+	.no-results-icon {
+		font-size: 4rem;
+		margin-bottom: 1rem;
+	}
+
+	.no-results h3 {
+		font-size: 1.5rem;
+		margin-bottom: 0.5rem;
+		color: var(--text-primary);
+	}
+
+	/* Quick Guide */
+	.quick-guide {
+		margin-bottom: 4rem;
+	}
+
+	.guide-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+		gap: 2rem;
+	}
+
+	.guide-card {
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 12px;
+		padding: 2rem;
+		text-align: center;
+		transition: all 0.3s ease;
+	}
+
+	.guide-card:hover {
+		border-color: var(--secondary);
+		transform: translateY(-3px);
+	}
+
+	.guide-icon {
+		font-size: 3rem;
+		margin-bottom: 1rem;
+	}
+
+	.guide-card h3 {
+		color: var(--text-primary);
+		margin-bottom: 1rem;
+		font-size: 1.125rem;
+	}
+
+	.guide-card p {
+		color: var(--text-secondary);
+		line-height: 1.6;
+	}
+
+	/* Modal */
+	.modal {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 1000;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 2rem;
+	}
+
+	.modal-overlay {
+		position: absolute;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		background: rgba(0, 0, 0, 0.8);
+		backdrop-filter: blur(5px);
+	}
+
+	.modal-content {
+		position: relative;
+		background: var(--surface);
+		border: 1px solid var(--border);
+		border-radius: 16px;
+		max-width: 600px;
+		width: 100%;
+		max-height: 80vh;
+		overflow-y: auto;
+		z-index: 1;
+	}
+
+	.modal-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 2rem 2rem 1rem 2rem;
+		border-bottom: 1px solid var(--border);
+	}
+
+	.modal-header h2 {
+		margin: 0;
+		color: var(--text-primary);
+	}
+
+	.modal-close {
+		background: none;
+		border: none;
+		font-size: 1.5rem;
+		color: var(--text-secondary);
+		cursor: pointer;
+		padding: 0.5rem;
+		border-radius: 50%;
+		transition: all 0.3s ease;
+	}
+
+	.modal-close:hover {
+		background: var(--surface-light);
+		color: var(--text-primary);
+	}
+
+	.modal-body {
+		padding: 2rem;
+	}
+
+	/* Responsive */
+	@media (max-width: 768px) {
+		.commands-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.commands-stats {
+			grid-template-columns: 1fr;
+		}
+
+		.category-filters {
+			justify-content: center;
+		}
+
+		.command-header {
+			flex-direction: column;
+			align-items: center;
+			text-align: center;
+		}
+
+		.command-meta {
+			grid-template-columns: 1fr;
+		}
+
+		.command-actions {
+			flex-direction: column;
+		}
+
+		.modal {
+			padding: 1rem;
+		}
+
+		.modal-content {
+			max-height: 90vh;
+		}
+	}
+</style>
+
+<script>
+	// Filter commands by search
+	function filterCommands() {
+		const searchTerm = document.getElementById('commandSearch').value.toLowerCase();
+		const commandCards = document.querySelectorAll('.command-card');
+		let visibleCount = 0;
+
+		commandCards.forEach(card => {
+			const commandName = card.dataset.name;
+			const commandText = card.textContent.toLowerCase();
+			
+			if (commandName.includes(searchTerm) || commandText.includes(searchTerm)) {
+				card.style.display = 'flex';
+				visibleCount++;
+			} else {
+				card.style.display = 'none';
+			}
+		});
+
+		// Show/hide no results message
+		const noResults = document.getElementById('noResults');
+		if (visibleCount === 0) {
+			noResults.style.display = 'block';
+			document.getElementById('commandsGrid').style.display = 'none';
+		} else {
+			noResults.style.display = 'none';
+			document.getElementById('commandsGrid').style.display = 'grid';
+		}
+	}
+
+	// Filter commands by category
+	function filterByCategory(category) {
+		const commandCards = document.querySelectorAll('.command-card');
+		const filterBtns = document.querySelectorAll('.filter-btn');
+		let visibleCount = 0;
+
+		// Update active button
+		filterBtns.forEach(btn => btn.classList.remove('active'));
+		event.target.classList.add('active');
+
+		// Filter cards
+		commandCards.forEach(card => {
+			if (category === 'all' || card.dataset.category === category) {
+				card.style.display = 'flex';
+				visibleCount++;
+			} else {
+				card.style.display = 'none';
+			}
+		});
+
+		// Clear search when filtering
+		document.getElementById('commandSearch').value = '';
+
+		// Show/hide no results message
+		const noResults = document.getElementById('noResults');
+		if (visibleCount === 0) {
+			noResults.style.display = 'block';
+			document.getElementById('commandsGrid').style.display = 'none';
+		} else {
+			noResults.style.display = 'none';
+			document.getElementById('commandsGrid').style.display = 'grid';
+		}
+	}
+
+	// Copy command to clipboard
+	function copyCommand(commandName) {
+		navigator.clipboard.writeText(commandName).then(() => {
+			// Show success message (you could implement a toast notification here)
+			const btn = event.target;
+			const originalText = btn.textContent;
+			btn.textContent = '✅ Copié !';
+			setTimeout(() => {
+				btn.textContent = originalText;
+			}, 2000);
+		});
+	}
+
+	// Show command details modal
+	function showCommandDetails(commandName) {
+		const modal = document.getElementById('commandModal');
+		const modalTitle = document.getElementById('modalTitle');
+		const modalBody = document.getElementById('modalBody');
+
+		// Find the command data (in a real app, this would come from your data source)
+		const commandData = {
+			name: commandName,
+			description: "Description détaillée de la commande...",
+			usage: "Usage complet avec tous les paramètres",
+			examples: ["Exemple 1", "Exemple 2", "Exemple 3"],
+			permissions: "Tous les utilisateurs",
+			cooldown: "30 secondes"
+		};
+
+		modalTitle.textContent = `Détails: ${commandName}`;
+		modalBody.innerHTML = `
+			<div class="modal-command-details">
+				<h3>${commandName}</h3>
+				<p>${commandData.description}</p>
+				
+				<div class="modal-section">
+					<h4>Utilisation:</h4>
+					<code>${commandData.usage}</code>
+				</div>
+				
+				<div class="modal-section">
+					<h4>Exemples:</h4>
+					${commandData.examples.map(ex => `<code>${ex}</code>`).join('')}
+				</div>
+				
+				<div class="modal-section">
+					<h4>Informations:</h4>
+					<p><strong>Permissions:</strong> ${commandData.permissions}</p>
+					<p><strong>Cooldown:</strong> ${commandData.cooldown}</p>
+				</div>
+			</div>
+		`;
+
+		modal.style.display = 'flex';
+		document.body.style.overflow = 'hidden';
+	}
+
+	// Hide command details modal
+	function hideCommandDetails() {
+		const modal = document.getElementById('commandModal');
+		modal.style.display = 'none';
+		document.body.style.overflow = 'auto';
+	}
+
+	// Close modal when clicking outside
+	document.addEventListener('click', function(e) {
+		if (e.target.classList.contains('modal-overlay')) {
+			hideCommandDetails();
+		}
+	});
+
+	// Close modal with Escape key
+	document.addEventListener('keydown', function(e) {
+		if (e.key === 'Escape') {
+			hideCommandDetails();
+		}
+	});
+</script>
