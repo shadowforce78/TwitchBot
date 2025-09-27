@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Giveaways - TwitchBot</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/giveaway.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <div class="logo">
+                <h2>🤖 TwitchBot</h2>
+            </div>
+        </div>
+        
+        <div class="navbar-center">
+            <a href="/" class="nav-link active">
+                🏠 Accueil
+            </a>
+            <!-- <a href="/commands" class="nav-link">
+                📋 Commandes
+            </a> -->
+        </div>
+        
+        <div class="navbar-right">
+            <!-- Contenu pour utilisateur connecté -->
+            <div id="user-connected" class="user-section" style="display: none;">
+                <div class="user-info">
+                    <img id="user-avatar" class="user-avatar" src="" alt="Avatar">
+                    <span id="user-name">Chargement...</span>
+                </div>
+                <button id="admin-btn" class="btn btn-primary btn-sm" onclick="goToAdmin()" style="display: none;">
+                    ⚙️ Admin
+                </button>
+                <button class="btn btn-secondary btn-sm" onclick="logout()">
+                    🚪 Déconnexion
+                </button>
+            </div>
+            
+            <!-- Contenu pour utilisateur non connecté -->
+            <div id="user-not-connected" class="user-section" style="display: none;">
+                <button class="btn btn-primary" onclick="login()">
+                    🔑 Se connecter
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container">
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="page-title">
+                    Bienvenue dans l'univers des 
+                    <span class="gradient-text">Giveaways</span>
+                </h1>
+                <p class="page-subtitle">
+                    Participez aux concours exclusifs et tentez de gagner des prix incroyables !
+                </p>
+            </div>
+        </section>
+
+        <!-- Stats Overview -->
+        <section class="stats-section">
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-icon">🎁</div>
+                    <div class="stat-value" id="active-giveaways-count">0</div>
+                    <div class="stat-label">Giveaways Actifs</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">👥</div>
+                    <div class="stat-value" id="total-participants">0</div>
+                    <div class="stat-label">Participants Total</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-value" id="user-participations">0</div>
+                    <div class="stat-label" id="user-participations-label">Vos Participations</div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">💎</div>
+                    <div class="stat-value" id="total-prizes">0€</div>
+                    <div class="stat-label">Valeur des Prix</div>
+                </div>
+            </div>
+        </section>
+
+        <!-- Active Giveaways -->
+        <section class="giveaways-section">
+            <div class="section-header">
+                <h2 class="section-title">🎊 Giveaways Actifs</h2>
+                <div class="section-actions">
+                    <button class="btn btn-secondary btn-sm" onclick="refreshGiveaways()">
+                        🔄 Actualiser
+                    </button>
+                </div>
+            </div>
+            
+            <div id="active-giveaways" class="giveaways-grid">
+                <div class="loading">Chargement des giveaways...</div>
+            </div>
+        </section>
+
+        <!-- Recently Ended Giveaways -->
+        <section class="giveaways-section">
+            <div class="section-header">
+                <h2 class="section-title">🏁 Giveaways Terminés</h2>
+            </div>
+            
+            <div id="ended-giveaways" class="giveaways-grid">
+                <div class="loading">Chargement...</div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Participation Modal -->
+    <div id="participation-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">🎁 Participer au Giveaway</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="modal-giveaway-info">
+                    <!-- Giveaway info will be loaded here -->
+                </div>
+                <div class="participation-requirements">
+                    <h4>📋 Conditions de participation :</h4>
+                    <ul id="requirements-list">
+                        <!-- Requirements will be loaded here -->
+                    </ul>
+                </div>
+                <div class="participation-actions">
+                    <button id="participate-btn" class="btn btn-primary" onclick="participateInGiveaway()">
+                        ✅ Participer
+                    </button>
+                    <button class="btn btn-secondary" onclick="closeModal()">
+                        ❌ Annuler
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <script src="/assets/js/common.js"></script>
+    <script src="/assets/js/giveaway-viewer.js"></script>
+</body>
+</html>

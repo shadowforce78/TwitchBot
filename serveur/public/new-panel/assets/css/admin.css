@@ -1,0 +1,503 @@
+/* ==== ADMIN SPECIFIC STYLES ==== */
+
+.admin-badge {
+  background: linear-gradient(135deg, var(--warning) 0%, #ff9500 100%);
+  color: var(--bg-primary);
+  padding: 2px 8px;
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-left: var(--space-xs);
+}
+
+/* ==== ADMIN HEADER ==== */
+.admin-header {
+  text-align: center;
+  padding: var(--space-xl) 0;
+  background: linear-gradient(135deg, rgba(145, 70, 255, 0.1) 0%, rgba(255, 192, 105, 0.1) 100%);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-xl);
+  border: 1px solid var(--border);
+}
+
+/* ==== STATUS SECTION ==== */
+.status-section {
+  margin-bottom: var(--space-xl);
+}
+
+.bot-controls {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.bot-status-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--space-lg);
+  margin-top: var(--space-lg);
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  padding: var(--space-md);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+}
+
+.status-icon {
+  font-size: 1.5rem;
+  width: 40px;
+  text-align: center;
+}
+
+.status-content {
+  flex: 1;
+}
+
+.status-label {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  margin-bottom: var(--space-xs);
+}
+
+.status-value {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ==== TABS ==== */
+.admin-tabs {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.tab-buttons {
+  display: flex;
+  background: var(--bg-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.tab-btn {
+  flex: 1;
+  padding: var(--space-md);
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  border-right: 1px solid var(--border);
+}
+
+.tab-btn:last-child {
+  border-right: none;
+}
+
+.tab-btn:hover {
+  background: var(--bg-card);
+  color: var(--text-primary);
+}
+
+.tab-btn.active {
+  background: var(--primary);
+  color: white;
+}
+
+.tab-content {
+  display: none;
+  padding: var(--space-xl);
+}
+
+.tab-content.active {
+  display: block;
+}
+
+.tab-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-xl);
+  padding-bottom: var(--space-lg);
+  border-bottom: 1px solid var(--border);
+}
+
+.tab-header h3 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* ==== STATS GRIDS ==== */
+.giveaway-stats,
+.users-stats {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+/* ==== ADMIN GIVEAWAYS ==== */
+.admin-giveaways-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.admin-giveaway-item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  transition: all 0.3s ease;
+}
+
+.admin-giveaway-item:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-card-hover);
+}
+
+.admin-giveaway-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-md);
+}
+
+.admin-giveaway-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.admin-giveaway-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.admin-giveaway-info {
+  display: grid;
+  grid-template-columns: 1fr 200px;
+  gap: var(--space-lg);
+  align-items: start;
+}
+
+.admin-giveaway-details {
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.admin-giveaway-stats {
+  background: var(--bg-card);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+}
+
+.admin-stat-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: var(--space-xs);
+}
+
+.admin-stat-item:last-child {
+  margin-bottom: 0;
+}
+
+.admin-stat-label {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.admin-stat-value {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+/* ==== COMMANDS LIST ==== */
+.commands-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-md);
+}
+
+.command-item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.command-info h4 {
+  color: var(--primary);
+  margin-bottom: var(--space-xs);
+  font-size: 1.1rem;
+}
+
+.command-description {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+  margin-bottom: var(--space-xs);
+}
+
+.command-response {
+  color: var(--text-primary);
+  font-family: 'Courier New', monospace;
+  background: var(--bg-card);
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.9rem;
+}
+
+.command-actions {
+  display: flex;
+  gap: var(--space-xs);
+}
+
+/* ==== USERS LIST ==== */
+.users-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: var(--space-lg);
+}
+
+.user-item {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+}
+
+.user-header {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.user-avatar-large {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+}
+
+.user-info h4 {
+  color: var(--text-primary);
+  margin-bottom: var(--space-xs);
+}
+
+.user-id {
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.user-pass-status {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  margin-top: var(--space-sm);
+}
+
+.pass-badge {
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.pass-badge.valid {
+  background: rgba(0, 245, 255, 0.2);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+.pass-badge.invalid {
+  background: rgba(255, 107, 107, 0.2);
+  color: var(--error);
+  border: 1px solid var(--error);
+}
+
+/* ==== WEBHOOK DATA ==== */
+.webhook-data {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-lg);
+}
+
+.webhook-section {
+  background: var(--bg-secondary);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+}
+
+.webhook-section h4 {
+  color: var(--primary);
+  margin-bottom: var(--space-md);
+  font-size: 1.2rem;
+}
+
+.webhook-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.webhook-table th,
+.webhook-table td {
+  padding: var(--space-sm);
+  text-align: left;
+  border-bottom: 1px solid var(--border);
+}
+
+.webhook-table th {
+  background: var(--bg-card);
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.webhook-table td {
+  color: var(--text-secondary);
+}
+
+.webhook-table tr:hover {
+  background: var(--bg-card);
+}
+
+/* ==== FORM STYLES ==== */
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-md);
+}
+
+.form-actions {
+  display: flex;
+  gap: var(--space-sm);
+  justify-content: flex-end;
+  margin-top: var(--space-lg);
+  padding-top: var(--space-lg);
+  border-top: 1px solid var(--border);
+}
+
+.modal-content.large {
+  max-width: 600px;
+}
+
+/* ==== ACTION BUTTONS ==== */
+.btn-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  border-radius: var(--radius-sm);
+}
+
+.btn-edit {
+  background: var(--info);
+  color: white;
+}
+
+.btn-delete {
+  background: var(--error);
+  color: white;
+}
+
+.btn-view {
+  background: var(--text-muted);
+  color: white;
+}
+
+.btn-winner {
+  background: var(--warning);
+  color: var(--bg-primary);
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .tab-buttons {
+    flex-direction: column;
+  }
+  
+  .tab-btn {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+  }
+  
+  .tab-btn:last-child {
+    border-bottom: none;
+  }
+  
+  .bot-status-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .admin-giveaway-info {
+    grid-template-columns: 1fr;
+  }
+  
+  .users-list {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .tab-header {
+    flex-direction: column;
+    gap: var(--space-sm);
+    align-items: stretch;
+  }
+  
+  .command-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: var(--space-md);
+  }
+  
+  .command-actions {
+    justify-content: flex-end;
+  }
+}
+
+/* ==== ANIMATIONS ==== */
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.tab-content.active {
+  animation: slideIn 0.3s ease-out;
+}
+
+.admin-giveaway-item,
+.command-item,
+.user-item {
+  animation: slideIn 0.3s ease-out;
+}
+
+/* ==== UTILITIES ==== */
+.text-success { color: var(--success) !important; }
+.text-warning { color: var(--warning) !important; }
+.text-error { color: var(--error) !important; }
+.text-info { color: var(--info) !important; }

@@ -1,0 +1,434 @@
+/* ==== HERO SECTION ==== */
+.hero {
+  text-align: center;
+  padding: var(--space-xl) 0;
+  background: linear-gradient(135deg, rgba(145, 70, 255, 0.1) 0%, rgba(241, 61, 223, 0.1) 100%);
+  border-radius: var(--radius-lg);
+  margin-bottom: var(--space-xl);
+  border: 1px solid var(--border);
+}
+
+.hero-content {
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+/* ==== SECTIONS ==== */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-lg);
+}
+
+.section-title {
+  font-size: 1.8rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.section-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+/* ==== GIVEAWAYS GRID ==== */
+.giveaways-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: var(--space-lg);
+  margin-bottom: var(--space-xl);
+}
+
+/* ==== GIVEAWAY CARDS ==== */
+.giveaway-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.giveaway-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+  border-color: var(--primary);
+}
+
+.giveaway-card.participating {
+  border-color: var(--success);
+  background: linear-gradient(135deg, var(--bg-card) 0%, rgba(0, 245, 255, 0.05) 100%);
+}
+
+.giveaway-card.ended {
+  opacity: 0.7;
+  cursor: default;
+}
+
+.giveaway-card.ended:hover {
+  transform: none;
+  box-shadow: none;
+  border-color: var(--border);
+}
+
+/* ==== GIVEAWAY IMAGE ==== */
+.giveaway-image {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+}
+
+.giveaway-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.giveaway-card:hover .giveaway-image img {
+  transform: scale(1.05);
+}
+
+.giveaway-status {
+  position: absolute;
+  top: var(--space-sm);
+  left: var(--space-sm);
+}
+
+.status-badge {
+  padding: var(--space-xs) var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-badge.active {
+  background: var(--success);
+  color: var(--bg-primary);
+}
+
+.status-badge.ended {
+  background: var(--text-muted);
+  color: white;
+}
+
+.participation-indicator {
+  position: absolute;
+  top: var(--space-sm);
+  right: var(--space-sm);
+  background: var(--success);
+  color: var(--bg-primary);
+  padding: var(--space-xs);
+  border-radius: 50%;
+  font-size: 1.2rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* ==== GIVEAWAY CONTENT ==== */
+.giveaway-content {
+  padding: var(--space-lg);
+}
+
+.giveaway-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: var(--space-sm);
+  line-height: 1.3;
+}
+
+.giveaway-description {
+  color: var(--text-secondary);
+  margin-bottom: var(--space-md);
+  line-height: 1.5;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ==== GIVEAWAY DETAILS ==== */
+.giveaway-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  font-size: 0.9rem;
+}
+
+.detail-icon {
+  font-size: 1rem;
+}
+
+.detail-value {
+  color: var(--text-primary);
+  font-weight: 600;
+}
+
+.detail-label {
+  color: var(--text-secondary);
+}
+
+/* ==== PRIZE INFO ==== */
+.prize-info {
+  background: linear-gradient(135deg, rgba(145, 70, 255, 0.1) 0%, rgba(241, 61, 223, 0.1) 100%);
+  border: 1px solid var(--primary);
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
+  margin-bottom: var(--space-md);
+}
+
+.prize-title {
+  font-size: 0.9rem;
+  color: var(--primary);
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+}
+
+.prize-value {
+  color: var(--text-primary);
+  font-weight: 700;
+}
+
+/* ==== PROGRESS BAR ==== */
+.progress-bar {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  height: 8px;
+  margin: var(--space-sm) 0;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--primary) 0%, var(--secondary) 100%);
+  border-radius: var(--radius-sm);
+  transition: width 0.3s ease;
+}
+
+.progress-text {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-top: var(--space-xs);
+}
+
+/* ==== COUNTDOWN ==== */
+.countdown {
+  display: flex;
+  justify-content: center;
+  gap: var(--space-sm);
+  margin: var(--space-md) 0;
+}
+
+.countdown-item {
+  text-align: center;
+  padding: var(--space-xs);
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  min-width: 50px;
+}
+
+.countdown-value {
+  display: block;
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary);
+}
+
+.countdown-label {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+/* ==== GIVEAWAY ACTIONS ==== */
+.giveaway-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.participate-btn {
+  flex: 1;
+  background: linear-gradient(135deg, var(--success) 0%, #00d4aa 100%);
+  color: var(--bg-primary);
+  border: none;
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.participate-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.participate-btn:disabled {
+  background: var(--text-muted);
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.leave-btn {
+  flex: 1;
+  background: var(--error);
+  color: white;
+  border: none;
+  padding: var(--space-sm);
+  border-radius: var(--radius-sm);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.leave-btn:hover {
+  background: #e85555;
+  transform: translateY(-1px);
+}
+
+/* ==== WINNER DISPLAY ==== */
+.winner-info {
+  background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 165, 0, 0.1) 100%);
+  border: 1px solid #ffd700;
+  border-radius: var(--radius-sm);
+  padding: var(--space-sm);
+  text-align: center;
+}
+
+.winner-label {
+  font-size: 0.9rem;
+  color: #ffd700;
+  font-weight: 600;
+  margin-bottom: var(--space-xs);
+}
+
+.winner-name {
+  color: var(--text-primary);
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+/* ==== EMPTY STATES ==== */
+.empty-state {
+  text-align: center;
+  padding: var(--space-xl);
+  color: var(--text-secondary);
+  grid-column: 1 / -1;
+}
+
+.empty-state-icon {
+  font-size: 4rem;
+  margin-bottom: var(--space-md);
+  opacity: 0.5;
+}
+
+.empty-state h3 {
+  color: var(--text-primary);
+  margin-bottom: var(--space-sm);
+}
+
+/* ==== MODAL SPECIFICS ==== */
+.modal-giveaway-image {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+  margin-bottom: var(--space-md);
+}
+
+.participation-requirements {
+  background: var(--bg-secondary);
+  border-radius: var(--radius-sm);
+  padding: var(--space-md);
+  margin: var(--space-md) 0;
+}
+
+.participation-requirements h4 {
+  color: var(--primary);
+  margin-bottom: var(--space-sm);
+}
+
+.participation-requirements ul {
+  list-style: none;
+  padding: 0;
+}
+
+.participation-requirements li {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  padding: var(--space-xs) 0;
+  color: var(--text-secondary);
+}
+
+.participation-requirements li::before {
+  content: '✓';
+  color: var(--success);
+  font-weight: bold;
+}
+
+.participation-actions {
+  display: flex;
+  gap: var(--space-sm);
+  margin-top: var(--space-lg);
+}
+
+/* ==== RESPONSIVE ==== */
+@media (max-width: 768px) {
+  .giveaways-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .section-header {
+    flex-direction: column;
+    gap: var(--space-sm);
+    align-items: stretch;
+  }
+  
+  .giveaway-details {
+    grid-template-columns: 1fr;
+  }
+  
+  .countdown {
+    gap: var(--space-xs);
+  }
+  
+  .countdown-item {
+    min-width: 40px;
+  }
+  
+  .stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (max-width: 480px) {
+  .stats-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .giveaway-actions {
+    flex-direction: column;
+  }
+  
+  .participation-actions {
+    flex-direction: column;
+  }
+}

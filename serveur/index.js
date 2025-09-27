@@ -26,18 +26,22 @@ app.use(session({
 	secret: process.env.SESSION_SECRET || 'dev_secret_change_me',
 	resave: false,
 	saveUninitialized: false,
-	cookie: { httpOnly: true, sameSite: 'lax' }
+	cookie: {
+		httpOnly: true,
+		sameSite: 'lax',
+		maxAge: 24 * 60 * 60 * 1000, // 24 heures
+		secure: false // true seulement en HTTPS
+	}
 }));
 
-// Static
-app.use('/css', express.static(join(__dirname, 'public', 'css')));
-app.use('/js', express.static(join(__dirname, 'public', 'js')));
-app.use('/images', express.static(join(__dirname, 'public', 'assets', 'img')));
-app.use('/icons', express.static(join(__dirname, 'public', 'assets', 'ico')));
+// Static - New Panel Infrastructure (seule infrastructure)
+app.use('/assets', express.static(join(__dirname, 'public', 'new-panel', 'assets')));
+app.use('/admin', express.static(join(__dirname, 'public', 'new-panel', 'admin')));
 
-// Index
+// Index - Nouvelle infrastructure uniquement
 app.get('/', (req, res) => {
-	res.sendFile(join(__dirname, 'public', 'index.html'));
+	// Tous les utilisateurs (connectés ou non) -> Nouvelle page d'accueil
+	res.sendFile(join(__dirname, 'public', 'new-panel', 'index.html'));
 });
 
 // Login route -> redirection OAuth Twitch
@@ -107,7 +111,7 @@ app.get('/callback', async (req, res) => {
 		console.log(`[oauth] - isWhitelisted: ${isWhitelisted}`);
 		console.log(`[oauth] - WHITELIST:`, WHITELIST);
 		console.log(`[oauth] - CHANNEL_LOGIN:`, CHANNEL_LOGIN);
-		
+
 		if (isWhitelisted) {
 			console.log(`[oauth] Accès autorisé par whitelist pour ${user.login}`);
 		}
@@ -136,22 +140,41 @@ app.get('/no-access', (req, res) => {
 	res.send('<h1>Accès refusé</h1><p>Vous devez être modérateur de la chaîne pour accéder au panneau.</p><a href="/">Retour</a>');
 });
 
-// Middleware auth panel - uniquement pour les administrateurs
+// Middleware auth panel - pour tous les utilisateurs connectés
 function requireAccess(req, res, next) {
 	if (!req.session.user) return res.redirect('/');
-	if (!(req.session.user.isAuthorized || req.session.user.isWhitelisted)) return res.redirect('/no-access');
+	// Permettre l'accès à tous les utilisateurs connectés
 	next();
 }
 
 app.get('/panel', requireAccess, (req, res) => {
-	res.sendFile(join(__dirname, 'public', 'panel.html'));
+	// Vérifier si l'utilisateur est admin
+	const isAdmin = req.session.user && (req.session.user.isAuthorized || req.session.user.isWhitelisted);
+
+	if (isAdmin) {
+		// Admin -> Panel d'administration
+		res.sendFile(join(__dirname, 'public', 'new-panel', 'admin', 'index.html'));
+	} else {
+		// Utilisateur normal -> Page d'accueil giveaways
+		res.sendFile(join(__dirname, 'public', 'new-panel', 'index.html'));
+	}
 });
 
 app.get('/api/me', (req, res) => {
-	if (!req.session.user) return res.json({ loggedIn: false });
+	if (!req.session.user) return res.json({ isAuthenticated: false });
 	const { id, login, displayName, profileImage, isAuthorized, isWhitelisted } = req.session.user;
 	console.log(`[api/me] User: ${login}, isAuthorized: ${isAuthorized}, isWhitelisted: ${isWhitelisted}`);
-	res.json({ loggedIn: true, id, login, displayName, profileImage, isAuthorized, isWhitelisted, isModerator: isAuthorized || isWhitelisted });
+	res.json({
+		isAuthenticated: true,
+		id,
+		login,
+		displayName,
+		avatar: profileImage,
+		isAuthorized,
+		isWhitelisted,
+		isAdmin: isAuthorized || isWhitelisted,
+		isModerator: isAuthorized || isWhitelisted
+	});
 });
 
 // Route de debug pour voir le statut d'authentification
@@ -273,7 +296,7 @@ app.put('/api/commands/:name', (req, res) => {
 	console.log(`[api] PUT /api/commands/${req.params.name} - User:`, userInfo);
 	console.log(`[api] Session user:`, req.session.user);
 	console.log(`[api] Auth check:`, req.session.user ? (req.session.user.isAuthorized || req.session.user.isWhitelisted) : false);
-	
+
 	if (!req.session.user || !(req.session.user.isAuthorized || req.session.user.isWhitelisted)) {
 		console.log(`[api] Access denied for user:`, userInfo);
 		return res.status(403).json({ error: 'forbidden' });
@@ -469,9 +492,9 @@ app.get('/api/auth/check', (req, res) => {
 	if (!req.session.user) {
 		return res.json({ authenticated: false });
 	}
-	
+
 	const { id, login, displayName, profileImage, isAuthorized, isWhitelisted } = req.session.user;
-	res.json({ 
+	res.json({
 		authenticated: true,
 		user: {
 			id,
@@ -488,15 +511,17 @@ app.get('/api/auth/check', (req, res) => {
 app.get('/api/giveaways', async (req, res) => {
 	try {
 		const db = new DatabaseManager();
-		const giveaways = await db.getActiveGiveaways();
-		
+		// Pour l'admin panel, récupérer tous les giveaways, sinon seulement les actifs
+		const isAdmin = req.session.user && (req.session.user.isAuthorized || req.session.user.isWhitelisted);
+		const giveaways = isAdmin ? await db.getAllGiveaways() : await db.getActiveGiveaways();
+
 		// Si l'utilisateur est connecté, ajouter l'état de participation
 		if (req.session.user) {
 			const userId = req.session.user.id;
-			
+
 			// Créer l'utilisateur s'il n'existe pas
 			await db.createUser(userId, req.session.user.login, req.session.user.displayName);
-			
+
 			// Vérifier les participations
 			for (let giveaway of giveaways) {
 				giveaway.is_participating = await db.isUserParticipating(giveaway.id, userId);
@@ -509,7 +534,7 @@ app.get('/api/giveaways', async (req, res) => {
 				giveaway.participant_count = await db.getParticipantCount(giveaway.id);
 			}
 		}
-		
+
 		await db.close();
 		res.json(giveaways);
 	} catch (error) {
@@ -521,29 +546,29 @@ app.get('/api/giveaways', async (req, res) => {
 // POST /api/giveaways - Créer un nouveau giveaway (admin uniquement)
 app.post('/api/giveaways', requireAuth, requireAdmin, async (req, res) => {
 	try {
-		const { titre, description, image, prix, nb_reward, cashprize, date_tirage } = req.body;
-		
-		if (!titre || titre.trim().length === 0) {
+		const { title, reward, description, end_date, thumbnail } = req.body;
+
+		if (!title || title.trim().length === 0) {
 			return res.status(400).json({ error: 'validation', message: 'Le titre est requis' });
 		}
 
 		const giveawayData = {
-			titre: titre.trim(),
+			titre: title.trim(),
 			description: description || null,
-			image: image || null,
-			prix: prix || null,
-			nb_reward: nb_reward || 1,
-			cashprize: cashprize || 0.00,
-			date_tirage: date_tirage || null
+			image: thumbnail || null,
+			prix: reward || null,
+			nb_reward: 1,
+			cashprize: 0.00,
+			date_tirage: end_date || null
 		};
 
 		const db = new DatabaseManager();
 		const giveawayId = await db.createGiveaway(giveawayData);
-		
+
 		await db.close();
-		
-		res.status(201).json({ 
-			success: true, 
+
+		res.status(201).json({
+			success: true,
 			id: giveawayId,
 			message: 'Giveaway créé avec succès'
 		});
@@ -558,38 +583,38 @@ app.post('/api/giveaways/:id/participate', requireAuth, async (req, res) => {
 	try {
 		const giveawayId = parseInt(req.params.id);
 		const userId = req.session.user.id;
-		
+
 		if (isNaN(giveawayId)) {
 			return res.status(400).json({ error: 'validation', message: 'ID de giveaway invalide' });
 		}
 
 		const db = new DatabaseManager();
-		
+
 		// Vérifier que le giveaway existe et est ouvert
 		const giveaways = await db.getActiveGiveaways();
 		const giveaway = giveaways.find(g => g.id === giveawayId && g.status === 'ouvert');
-		
+
 		if (!giveaway) {
 			await db.close();
 			return res.status(404).json({ error: 'not_found', message: 'Giveaway non trouvé ou fermé' });
 		}
-		
+
 		// Créer l'utilisateur s'il n'existe pas
 		await db.createUser(userId, req.session.user.login, req.session.user.displayName);
-		
+
 		// Vérifier si déjà participant
 		const isParticipating = await db.isUserParticipating(giveawayId, userId);
 		if (isParticipating) {
 			await db.close();
 			return res.status(409).json({ error: 'already_participating', message: 'Vous participez déjà à ce giveaway' });
 		}
-		
+
 		// Ajouter la participation
 		await db.addParticipation(giveawayId, userId);
-		
+
 		await db.close();
-		
-		res.json({ 
+
+		res.json({
 			success: true,
 			message: 'Participation enregistrée avec succès'
 		});
@@ -604,26 +629,26 @@ app.delete('/api/giveaways/:id/leave', requireAuth, async (req, res) => {
 	try {
 		const giveawayId = parseInt(req.params.id);
 		const userId = req.session.user.id;
-		
+
 		if (isNaN(giveawayId)) {
 			return res.status(400).json({ error: 'validation', message: 'ID de giveaway invalide' });
 		}
 
 		const db = new DatabaseManager();
-		
+
 		// Vérifier la participation
 		const isParticipating = await db.isUserParticipating(giveawayId, userId);
 		if (!isParticipating) {
 			await db.close();
 			return res.status(404).json({ error: 'not_participating', message: 'Vous ne participez pas à ce giveaway' });
 		}
-		
+
 		// Retirer la participation
 		await db.removeParticipation(giveawayId, userId);
-		
+
 		await db.close();
-		
-		res.json({ 
+
+		res.json({
 			success: true,
 			message: 'Participation annulée avec succès'
 		});
@@ -637,33 +662,33 @@ app.delete('/api/giveaways/:id/leave', requireAuth, async (req, res) => {
 app.put('/api/giveaways/:id/close', requireAuth, requireAdmin, async (req, res) => {
 	try {
 		const giveawayId = parseInt(req.params.id);
-		
+
 		if (isNaN(giveawayId)) {
 			return res.status(400).json({ error: 'validation', message: 'ID de giveaway invalide' });
 		}
 
 		const db = new DatabaseManager();
-		
+
 		// Vérifier que le giveaway existe
 		const giveaways = await db.getActiveGiveaways();
 		const giveaway = giveaways.find(g => g.id === giveawayId);
-		
+
 		if (!giveaway) {
 			await db.close();
 			return res.status(404).json({ error: 'not_found', message: 'Giveaway non trouvé' });
 		}
-		
+
 		if (giveaway.status === 'ferme') {
 			await db.close();
 			return res.status(400).json({ error: 'already_closed', message: 'Ce giveaway est déjà fermé' });
 		}
-		
+
 		// Fermer le giveaway
 		await db.closeGiveaway(giveawayId);
-		
+
 		await db.close();
-		
-		res.json({ 
+
+		res.json({
 			success: true,
 			message: 'Giveaway fermé avec succès'
 		});
@@ -683,12 +708,12 @@ app.get('/api/webhook/users', requireAuth, requireAdmin, async (req, res) => {
 		const offset = (page - 1) * limit;
 
 		const db = new DatabaseManager();
-		
+
 		const users = await db.getAllUsers(limit, offset);
 		const totalCount = await db.getUsersCount();
-		
+
 		await db.close();
-		
+
 		res.json({
 			users,
 			pagination: {
@@ -712,13 +737,13 @@ app.get('/api/webhook/passes', requireAuth, requireAdmin, async (req, res) => {
 		const offset = (page - 1) * limit;
 
 		const db = new DatabaseManager();
-		
+
 		const passes = await db.getAllPasses(limit, offset);
 		const totalCount = await db.getPassesCount();
 		const validCount = await db.getValidPassesCount();
-		
+
 		await db.close();
-		
+
 		res.json({
 			passes,
 			stats: {
@@ -743,13 +768,13 @@ app.get('/api/webhook/passes', requireAuth, requireAdmin, async (req, res) => {
 app.get('/api/webhook/stats', requireAuth, requireAdmin, async (req, res) => {
 	try {
 		const db = new DatabaseManager();
-		
+
 		const usersCount = await db.getUsersCount();
 		const passesCount = await db.getPassesCount();
 		const validPassesCount = await db.getValidPassesCount();
-		
+
 		await db.close();
-		
+
 		res.json({
 			users: {
 				total: usersCount
@@ -767,16 +792,166 @@ app.get('/api/webhook/stats', requireAuth, requireAdmin, async (req, res) => {
 	}
 });
 
-// Route pour le panel giveaway - nécessite une authentification
-app.get('/giveaway', (req, res) => {
-	// Vérifier si l'utilisateur est connecté
-	if (!req.session.user) {
-		// Rediriger vers la page de connexion
-		return res.redirect('/login');
+// Route /giveaway supprimée - intégrée dans la nouvelle infrastructure
+
+// ==== ROUTES API ADDITIONNELLES POUR ADMIN PANEL ====
+
+// Modifier un giveaway existant
+app.put('/api/giveaways/:id', requireAuth, requireAdmin, async (req, res) => {
+	try {
+		const { id } = req.params;
+		const { title, reward, description, end_date, thumbnail } = req.body;
+
+		if (!title || !reward || !end_date) {
+			return res.status(400).json({ error: 'validation', message: 'Titre, récompense et date de fin requis' });
+		}
+
+		const db = new DatabaseManager();
+		await db.updateGiveaway(parseInt(id), {
+			title,
+			reward,
+			description: description || '',
+			end_date,
+			thumbnail: thumbnail || ''
+		});
+		await db.close();
+
+		res.json({ success: true, message: 'Giveaway modifié avec succès' });
+	} catch (error) {
+		console.error('Erreur modification giveaway:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
 	}
-	
-	res.sendFile(join(__dirname, 'public', 'giveaway.html'));
 });
+
+// Supprimer un giveaway
+app.delete('/api/giveaways/:id', requireAuth, requireAdmin, async (req, res) => {
+	try {
+		const { id } = req.params;
+		const db = new DatabaseManager();
+
+		await db.deleteGiveaway(parseInt(id));
+		await db.close();
+		res.json({ success: true, message: 'Giveaway supprimé avec succès' });
+	} catch (error) {
+		console.error('Erreur suppression giveaway:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
+	}
+});
+
+// Tirer au sort un gagnant
+app.post('/api/giveaways/:id/draw-winner', requireAuth, requireAdmin, async (req, res) => {
+	try {
+		const { id } = req.params;
+		const db = new DatabaseManager();
+
+		// Récupérer les participants du giveaway
+		const participants = await db.getGiveawayParticipants(parseInt(id));
+
+		if (participants.length === 0) {
+			return res.status(400).json({ error: 'no_participants', message: 'Aucun participant pour ce giveaway' });
+		}
+
+		// Sélectionner un gagnant aléatoire
+		const winner = participants[Math.floor(Math.random() * participants.length)];
+
+		// Marquer le giveaway comme terminé et enregistrer le gagnant
+		await db.setGiveawayWinner(parseInt(id), winner.twitch_id);
+
+		res.json({
+			success: true,
+			message: 'Gagnant tiré au sort',
+			winner: {
+				display_name: winner.display_name,
+				twitch_id: winner.twitch_id
+			}
+		});
+		await db.close();
+	} catch (error) {
+		console.error('Erreur tirage gagnant:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
+	}
+});
+
+// Récupérer tous les utilisateurs
+app.get('/api/users', requireAuth, requireAdmin, async (req, res) => {
+	try {
+		const db = new DatabaseManager();
+		const users = await db.getAllUsers();
+		await db.close();
+		res.json(users);
+	} catch (error) {
+		console.error('Erreur récupération utilisateurs:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
+	}
+});
+
+// Récupérer les données webhook consolidées
+app.get('/api/webhook-data', requireAuth, requireAdmin, async (req, res) => {
+	try {
+		const db = new DatabaseManager();
+
+		// Récupérer les follows et subscriptions récents
+		const follows = await db.getRecentFollows(50);
+		const subscriptions = await db.getRecentSubscriptions(50);
+
+		await db.close();
+		res.json({
+			follows: follows || [],
+			subscriptions: subscriptions || []
+		});
+	} catch (error) {
+		console.error('Erreur récupération données webhook:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
+	}
+});
+
+// Statut du bot
+app.get('/api/bot-status', requireAuth, requireAdmin, (req, res) => {
+	try {
+		// Ces informations devraient venir du bot lui-même
+		// Pour l'instant, on retourne des données mockées
+		const status = {
+			connected: true, // À remplacer par le vrai statut
+			channel: CHANNEL_LOGIN,
+			commandCount: Object.keys(global.commandSystem?.commands || {}).length,
+			uptime: '2h 34m' // À calculer depuis le démarrage
+		};
+
+		res.json(status);
+	} catch (error) {
+		console.error('Erreur récupération statut bot:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
+	}
+});
+
+// Contrôles du bot (démarrer/arrêter)
+app.post('/api/bot/start', requireAuth, requireAdmin, (req, res) => {
+	try {
+		// À implémenter: démarrer le bot
+		res.json({ success: true, message: 'Bot démarré' });
+	} catch (error) {
+		console.error('Erreur démarrage bot:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
+	}
+});
+
+app.post('/api/bot/stop', requireAuth, requireAdmin, (req, res) => {
+	try {
+		// À implémenter: arrêter le bot
+		res.json({ success: true, message: 'Bot arrêté' });
+	} catch (error) {
+		console.error('Erreur arrêt bot:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
+	}
+});
+
+// Auto-start si ce fichier est exécuté directement
+if (require.main === module) {
+	app.listen(PORT, () => {
+		console.log(`[serveur] Serveur web démarré sur ${BASE_URL}`);
+		console.log(`[oauth] Redirect URI attendu: ${OAUTH_REDIRECT}`);
+	});
+}
 
 module.exports = {
 	start: () => app.listen(PORT, () => {

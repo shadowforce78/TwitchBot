@@ -270,6 +270,70 @@ class DatabaseManager {
         return await this.isParticipating(giveaway_id, user_id_twitch);
     }
 
+    // Nouvelles méthodes pour l'admin panel
+    async getAllGiveaways() {
+        return await this.query(`
+            SELECT g.*, 
+                   COUNT(p.user_id) as participant_count
+            FROM giveaway g
+            LEFT JOIN giveaway_participants p ON g.id = p.giveaway_id
+            GROUP BY g.id
+            ORDER BY g.created_at DESC
+        `);
+    }
+
+    async updateGiveaway(id, data) {
+        const { title, reward, description, end_date, thumbnail } = data;
+        return await this.query(`
+            UPDATE giveaway 
+            SET titre = ?, prix = ?, description = ?, date_tirage = ?, image = ?
+            WHERE id = ?
+        `, [title, reward, description, end_date, thumbnail, id]);
+    }
+
+    async deleteGiveaway(id) {
+        // Supprimer d'abord les participants
+        await this.query('DELETE FROM participants WHERE giveaway_id = ?', [id]);
+        // Puis le giveaway
+        return await this.query('DELETE FROM giveaway WHERE id = ?', [id]);
+    }
+
+    async setGiveawayWinner(id, winner_twitch_id) {
+        return await this.query(`
+            UPDATE giveaway 
+            SET state = 'ferme', winner_twitch_id = ?
+            WHERE id = ?
+        `, [winner_twitch_id, id]);
+    }
+
+    async getRecentFollows(limit = 50) {
+        try {
+            return await this.query(`
+                SELECT user_name, followed_at 
+                FROM follows 
+                ORDER BY followed_at DESC 
+                LIMIT ?
+            `, [limit]);
+        } catch (error) {
+            console.warn('[database] Table follows non trouvée');
+            return [];
+        }
+    }
+
+    async getRecentSubscriptions(limit = 50) {
+        try {
+            return await this.query(`
+                SELECT user_name, tier, created_at 
+                FROM subscriptions 
+                ORDER BY created_at DESC 
+                LIMIT ?
+            `, [limit]);
+        } catch (error) {
+            console.warn('[database] Table subscriptions non trouvée');
+            return [];
+        }
+    }
+
     // Méthode pour fermer la connexion
     async close() {
         if (this.pool) {

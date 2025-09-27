@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil - TwitchBot Panel</title>
+    <meta name="description" content="Panel de gestion TwitchBot">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <div class="logo">
+                <h2>🤖 TwitchBot</h2>
+            </div>
+        </div>
+        
+        <div class="navbar-center">
+            <a href="/" class="nav-link">� Giveaways</a>
+            <a href="/admin" class="nav-link" id="admin-link" style="display: none;">⚙️ Panel Admin</a>
+        </div>
+        
+        <div class="navbar-right">
+            <div class="user-info" id="user-info" style="display: none;">
+                <img id="user-avatar" class="user-avatar" src="" alt="Avatar">
+                <span id="user-name">Chargement...</span>
+            </div>
+            <button class="btn btn-outline" id="auth-btn" onclick="handleAuth()">
+                🔗 Se connecter
+            </button>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    🎁 <span class="gradient-text">Giveaways</span> 
+                </h1>
+                <p class="hero-subtitle">
+                    Participez aux concours et tentez de gagner des prix incroyables !
+                </p>
+                
+                <div class="hero-actions" id="hero-actions">
+                    <!-- Buttons will be added dynamically based on user status -->
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- Giveaways Section -->
+        <section class="features-section" id="giveaways">
+            <h2 class="section-title">🎁 Giveaways Actifs</h2>
+            
+            <div class="features-grid" id="giveaways-list">
+                <p class="text-center text-secondary">Chargement des giveaways...</p>
+            </div>
+        </section>
+
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 TwitchBot Panel - Créé avec ❤️</p>
+            <div class="social-links">
+                <a href="#" class="social-link">
+                    <img src="/github-icon.svg" alt="GitHub">
+                </a>
+                <a href="#" class="social-link">
+                    <img src="/twitch-icon.svg" alt="Twitch">
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Participation Modal -->
+    <div id="participation-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-giveaway-title">Participer au Giveaway</h3>
+                <button class="modal-close" onclick="closeModal('participation-modal')">&times;</button>
+            </div>
+            <div id="modal-giveaway-content">
+                <!-- Content will be filled dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <script src="/assets/js/common.js"></script>
+    <script src="/assets/js/astro-homepage.js"></script>
+</body>
+</html>

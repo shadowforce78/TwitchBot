@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Panel Admin - TwitchBot</title>
+    <meta name="description" content="Panel d'administration TwitchBot">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+    <link rel="stylesheet" href="/assets/css/astro-admin.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <div class="logo">
+                <h2>🤖 TwitchBot Admin</h2>
+            </div>
+        </div>
+        
+        <div class="navbar-center">
+            <a href="/" class="nav-link">🏠 Accueil</a>
+            <a href="/admin" class="nav-link">⚙️ Panel Admin</a>
+            <a href="#giveaways" class="nav-link">🎁 Giveaways</a>
+        </div>
+        
+        <div class="navbar-right">
+            <div class="user-info">
+                <img id="user-avatar" class="user-avatar" src="" alt="Avatar">
+                <span id="user-name">Chargement...</span>
+                <span class="admin-badge">👑 Admin</span>
+            </div>
+            <button class="btn btn-outline" onclick="logout()">
+                🚪 Déconnexion
+            </button>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Admin Header -->
+        <div class="admin-header">
+            <h1 class="page-title">🎁 Gestion des Giveaways</h1>
+            <p class="page-subtitle">Créez et gérez vos concours facilement</p>
+        </div>
+
+
+
+
+
+        <!-- Giveaways Management -->
+        <section class="giveaways-management">
+            <div class="card admin-card">
+                <div class="card-header">
+                    <h3>🎁 Giveaways Actifs</h3>
+                    <button class="btn btn-secondary" onclick="createGiveaway()">+ Nouveau Giveaway</button>
+                </div>
+                <p>Créez et gérez vos concours facilement.</p>
+
+                <div class="giveaway-list" id="admin-giveaways-list">
+                    <p class="text-center text-secondary">Chargement des giveaways...</p>
+                </div>
+            </div>
+        </section>
+
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 TwitchBot Panel - Créé avec ❤️</p>
+            <div class="social-links">
+                <a href="#" class="social-link">
+                    <img src="/github-icon.svg" alt="GitHub">
+                </a>
+                <a href="#" class="social-link">
+                    <img src="/twitch-icon.svg" alt="Twitch">
+                </a>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Create Giveaway Modal -->
+    <div id="create-giveaway-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">🎁 Créer un nouveau Giveaway</h3>
+                <button class="modal-close" onclick="closeModal('create-giveaway-modal')">&times;</button>
+            </div>
+            <form id="create-giveaway-form">
+                <div class="form-group">
+                    <label class="form-label" for="title">Titre du Giveaway</label>
+                    <input type="text" id="title" name="title" class="form-input" required placeholder="Ex: Clavier mécanique RGB">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="reward">Récompense</label>
+                    <input type="text" id="reward" name="reward" class="form-input" required placeholder="Ex: Clavier Razer BlackWidow">
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="description">Description</label>
+                    <textarea id="description" name="description" class="form-textarea" placeholder="Description détaillée du giveaway..."></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="end_date">Date de fin</label>
+                    <input type="datetime-local" id="end_date" name="end_date" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="thumbnail">Miniature (URL)</label>
+                    <input type="url" id="thumbnail" name="thumbnail" class="form-input" placeholder="https://exemple.com/image.jpg">
+                    <small class="form-hint">URL de l'image miniature pour le giveaway (optionnel)</small>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        🎁 Créer le Giveaway
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Giveaway Modal -->
+    <div id="edit-giveaway-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">✏️ Modifier le Giveaway</h3>
+                <button class="modal-close" onclick="closeModal('edit-giveaway-modal')">&times;</button>
+            </div>
+            <form id="edit-giveaway-form">
+                <input type="hidden" id="edit-giveaway-id" name="id">
+                <div class="form-group">
+                    <label class="form-label" for="edit-giveaway-title">Titre du Giveaway</label>
+                    <input type="text" id="edit-giveaway-title" name="title" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="edit-giveaway-reward">Récompense</label>
+                    <input type="text" id="edit-giveaway-reward" name="reward" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="edit-giveaway-description">Description</label>
+                    <textarea id="edit-giveaway-description" name="description" class="form-textarea"></textarea>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="edit-giveaway-end-date">Date de fin</label>
+                    <input type="datetime-local" id="edit-giveaway-end-date" name="end_date" class="form-input" required>
+                </div>
+                <div class="form-group">
+                    <label class="form-label" for="edit-giveaway-thumbnail">Miniature (URL)</label>
+                    <input type="url" id="edit-giveaway-thumbnail" name="thumbnail" class="form-input" placeholder="https://exemple.com/image.jpg">
+                    <small class="form-hint">URL de l'image miniature pour le giveaway (optionnel)</small>
+                </div>
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        💾 Sauvegarder les modifications
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Winner Modal -->
+    <div id="winner-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">🎉 Gagnant du Giveaway</h3>
+                <button class="modal-close" onclick="closeModal('winner-modal')">&times;</button>
+            </div>
+            <div id="winner-content">
+                <!-- Content will be filled dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <script src="/assets/js/common.js"></script>
+    <script src="/assets/js/admin.js"></script>
+</body>
+</html>
