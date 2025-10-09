@@ -55,7 +55,7 @@ class DatabaseManager {
     async createGiveaway(data) {
         // Support des deux types d'appels
         let titre, description, image, prix, nb_reward, cashprize, date_tirage;
-        
+
         if (typeof data === 'string') {
             // Appel avec paramètres séparés: createGiveaway(title, description, image_url)
             titre = arguments[0];
@@ -293,7 +293,7 @@ class DatabaseManager {
 
     async deleteGiveaway(id) {
         // Supprimer d'abord les participants
-        await this.query('DELETE FROM participants WHERE giveaway_id = ?', [id]);
+        await this.query('DELETE FROM giveaway_participants WHERE giveaway_id = ?', [id]);
         // Puis le giveaway
         return await this.query('DELETE FROM giveaway WHERE id = ?', [id]);
     }

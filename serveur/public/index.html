@@ -1,82 +1,103 @@
 <!DOCTYPE html>
-<html lang="en">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Kiwi Twitch</title>
-        <link rel="stylesheet" href="./css/common.css">
-        <link rel="stylesheet" href="./css/index.css">
-        <script src="./js/index.js"></script>
-        <link rel="icon" type="image/png" href="/images/logo_twitch.png">
-    </head>
-    <body>
-        <div class="navbar">
-            <div class="navbar-left">
-                <img src="/images/logo_twitch.png"
-                    alt="Logo Twitch KiwiTFB" class="logoTwitch">
-                <img src="/images/logo_gm_white.png" alt="Logo GM"
-                    class="logoGM">
-            </div>
-            <div class="navbar-center">
-                <button class="home">Home</button>
-                <button class="giveaway">Giveaway</button>
-                <button class="more">More</button>
-            </div>
-            <div class="navbar-right">
-                <button id="adminBtn" class="admin-btn" style="display:none;">Panel Admin</button>
-                <button id="loginBtn" class="login-btn">Login</button>
-                <div id="userMenu" class="user-menu" style="display:none;">
-                    <img id="twitchPDP" class="twitch-pdp" src alt="Twitch Profile">
-                    <div class="user-dropdown">
-                        <button onclick="window.location.href='/logout'">Se déconnecter</button>
-                    </div>
-                </div>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Accueil - TwitchBot Panel</title>
+    <meta name="description" content="Panel de gestion TwitchBot">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/main.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <div class="logo">
+                <h2>🤖 TwitchBot</h2>
             </div>
         </div>
-
-        <!-- Section principale -->
-        <main class="main-content">
-            <div class="welcome-section">
-                <h1>Bienvenue sur Kiwi Twitch Bot</h1>
-                <p>Découvrez nos giveaways en cours et participez pour gagner des prix incroyables !</p>
+        
+        <div class="navbar-center">
+            <a href="/" class="nav-link">� Giveaways</a>
+            <a href="/admin" class="nav-link" id="admin-link" style="display: none;">⚙️ Panel Admin</a>
+        </div>
+        
+        <div class="navbar-right">
+            <div class="user-info" id="user-info" style="display: none;">
+                <img id="user-avatar" class="user-avatar" src="" alt="Avatar">
+                <span id="user-name">Chargement...</span>
             </div>
+            <button class="btn btn-outline" id="auth-btn" onclick="handleAuth()">
+                🔗 Se connecter
+            </button>
+        </div>
+    </nav>
+
+    <main>
+        <!-- Hero Section -->
+        <section class="hero">
+            <div class="hero-content">
+                <h1 class="hero-title">
+                    🎁 <span class="gradient-text">Giveaways</span> 
+                </h1>
+                <p class="hero-subtitle">
+                    Participez aux concours et tentez de gagner des prix incroyables !
+                </p>
+                
+                <div class="hero-actions" id="hero-actions">
+                    <!-- Buttons will be added dynamically based on user status -->
+                </div>
+            </div>
+        </section>
+
+
+
+        <!-- Giveaways Section -->
+        <section class="features-section" id="giveaways">
+            <h2 class="section-title">🎁 Giveaways Actifs</h2>
             
-            <!-- Section Giveaways -->
-            <section id="home-giveaways" class="home-giveaways-section">
-                <div class="loading">Chargement des giveaways...</div>
-            </section>
-        </main>
+            <div class="features-grid" id="giveaways-list">
+                <p class="text-center text-secondary">Chargement des giveaways...</p>
+            </div>
+        </section>
 
-        <div class="footer">
-            <div class="footer-left">
-                <h3 class="socials-h3">Réseaux sociaux</h3>
-                <p class="socials-p">Découvrez en plus sur moi en me suivant sur
-                    mes différents
-                    réseaux sociaux !</p>
-                <div class="social-links">
-                    <a href="https://gmocellin.com" target="_blank"
-                        class="social-icon">
-                        <img src="/icons/webIcon.png" alt="Site Web"
-                            class="social-icon-img">
-                    </a>
-                    <a href="https://www.instagram.com/kiwiman_tfb/"
-                        target="_blank" class="social-icon">
-                        <img src="/icons/instaIcon.png" alt="Instagram"
-                            class="social-icon-img">
-                    </a>
-                    <a href="https://linkedin.com/in/gmocellin" target="_blank"
-                        class="social-icon">
-                        <img src="/icons/linkedinIcon.png" alt="LinkedIn"
-                            class="social-icon-img">
-                    </a>
-                    <a href="https://github.com/KiwimanTFB" target="_blank"
-                        class="social-icon">
-                        <img src="/icons/githubIcon.png" alt="GitHub"
-                            class="social-icon-img">
-                    </a>
-                </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-content">
+            <p>&copy; 2025 TwitchBot Panel - Créé avec ❤️</p>
+            <div class="social-links">
+                <a href="#" class="social-link">
+                    <img src="/github-icon.svg" alt="GitHub">
+                </a>
+                <a href="#" class="social-link">
+                    <img src="/twitch-icon.svg" alt="Twitch">
+                </a>
             </div>
         </div>
+    </footer>
 
-    </body>
+    <!-- Participation Modal -->
+    <div id="participation-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title" id="modal-giveaway-title">Participer au Giveaway</h3>
+                <button class="modal-close" onclick="closeModal('participation-modal')">&times;</button>
+            </div>
+            <div id="modal-giveaway-content">
+                <!-- Content will be filled dynamically -->
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <script src="/assets/js/common.js"></script>
+    <script src="/assets/js/astro-homepage.js"></script>
+</body>
 </html>

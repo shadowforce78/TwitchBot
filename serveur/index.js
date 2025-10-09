@@ -34,14 +34,14 @@ app.use(session({
 	}
 }));
 
-// Static - New Panel Infrastructure (seule infrastructure)
-app.use('/assets', express.static(join(__dirname, 'public', 'new-panel', 'assets')));
-app.use('/admin', express.static(join(__dirname, 'public', 'new-panel', 'admin')));
+// Static - Panel Infrastructure
+app.use('/assets', express.static(join(__dirname, 'public', 'assets')));
+app.use('/admin', express.static(join(__dirname, 'public', 'admin')));
 
-// Index - Nouvelle infrastructure uniquement
+// Index - Page d'accueil
 app.get('/', (req, res) => {
-	// Tous les utilisateurs (connectés ou non) -> Nouvelle page d'accueil
-	res.sendFile(join(__dirname, 'public', 'new-panel', 'index.html'));
+	// Tous les utilisateurs (connectés ou non) -> Page d'accueil
+	res.sendFile(join(__dirname, 'public', 'index.html'));
 });
 
 // Login route -> redirection OAuth Twitch
@@ -153,10 +153,10 @@ app.get('/panel', requireAccess, (req, res) => {
 
 	if (isAdmin) {
 		// Admin -> Panel d'administration
-		res.sendFile(join(__dirname, 'public', 'new-panel', 'admin', 'index.html'));
+		res.sendFile(join(__dirname, 'public', 'admin', 'index.html'));
 	} else {
 		// Utilisateur normal -> Page d'accueil giveaways
-		res.sendFile(join(__dirname, 'public', 'new-panel', 'index.html'));
+		res.sendFile(join(__dirname, 'public', 'index.html'));
 	}
 });
 
