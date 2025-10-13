@@ -602,6 +602,13 @@ app.post('/api/giveaways/:id/participate', requireAuth, async (req, res) => {
 		// Créer l'utilisateur s'il n'existe pas
 		await db.createUser(userId, req.session.user.login, req.session.user.displayName);
 
+		// Vérifier si l'utilisateur a un pass valide
+		const hasValidPass = await db.hasValidPass(userId);
+		if (!hasValidPass) {
+			await db.close();
+			return res.status(403).json({ error: 'no_valid_pass', message: 'Vous devez avoir un pass valide pour participer aux giveaways' });
+		}
+
 		// Vérifier si déjà participant
 		const isParticipating = await db.isUserParticipating(giveawayId, userId);
 		if (isParticipating) {

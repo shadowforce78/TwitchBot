@@ -250,6 +250,14 @@ class DatabaseManager {
         return results[0] || null;
     }
 
+    async hasValidPass(id_twitch) {
+        const results = await this.query(
+            "SELECT valide FROM pass WHERE id_twitch = ? AND valide = 1",
+            [id_twitch]
+        );
+        return results.length > 0;
+    }
+
     async getPassById(id_twitch) {
         const results = await this.query("SELECT * FROM pass WHERE id_twitch = ?", [
             id_twitch,
