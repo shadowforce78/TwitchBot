@@ -213,6 +213,7 @@ function editGiveaway(id) {
     document.getElementById('edit-giveaway-title').value = giveaway.titre || giveaway.title || '';
     document.getElementById('edit-giveaway-reward').value = giveaway.prix || giveaway.reward || '';
     document.getElementById('edit-giveaway-description').value = giveaway.description || '';
+    document.getElementById('edit-giveaway-thumbnail').value = giveaway.thumbnail || '';
     
     if (giveaway.date_tirage || giveaway.end_date) {
         const endDate = new Date(giveaway.date_tirage || giveaway.end_date);
@@ -321,6 +322,7 @@ async function handleCreateGiveaway(e) {
         reward: formData.get('reward'),
         description: formData.get('description'),
         end_date: formData.get('end_date'),
+        thumbnail: formData.get('thumbnail'),
         min_follows: parseInt(formData.get('min_follows')) || 0,
         min_messages: parseInt(formData.get('min_messages')) || 0
     };
@@ -357,6 +359,7 @@ async function handleEditGiveaway(e) {
         reward: formData.get('reward'),
         description: formData.get('description'),
         end_date: formData.get('end_date'),
+        thumbnail: formData.get('thumbnail'),
         min_follows: parseInt(formData.get('min_follows')) || 0,
         min_messages: parseInt(formData.get('min_messages')) || 0
     };

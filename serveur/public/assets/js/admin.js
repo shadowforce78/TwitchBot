@@ -325,6 +325,7 @@ async function handleCreateGiveaway(e) {
         reward: formData.get('reward'),
         description: formData.get('description'),
         end_date: formData.get('end_date'),
+        thumbnail: formData.get('thumbnail'),
         min_follows: parseInt(formData.get('min_follows')) || 0,
         min_messages: parseInt(formData.get('min_messages')) || 0
     };
@@ -361,6 +362,7 @@ async function handleEditGiveaway(e) {
         reward: formData.get('reward'),
         description: formData.get('description'),
         end_date: formData.get('end_date'),
+        thumbnail: formData.get('thumbnail'),
         min_follows: parseInt(formData.get('min_follows')) || 0,
         min_messages: parseInt(formData.get('min_messages')) || 0
     };
