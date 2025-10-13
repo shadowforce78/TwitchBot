@@ -592,7 +592,7 @@ app.post('/api/giveaways/:id/participate', requireAuth, async (req, res) => {
 
 		// Vérifier que le giveaway existe et est ouvert
 		const giveaways = await db.getActiveGiveaways();
-		const giveaway = giveaways.find(g => g.id === giveawayId && g.status === 'ouvert');
+		const giveaway = giveaways.find(g => g.id === giveawayId && g.state === 'ouvert');
 
 		if (!giveaway) {
 			await db.close();
@@ -678,7 +678,7 @@ app.put('/api/giveaways/:id/close', requireAuth, requireAdmin, async (req, res) 
 			return res.status(404).json({ error: 'not_found', message: 'Giveaway non trouvé' });
 		}
 
-		if (giveaway.status === 'ferme') {
+		if (giveaway.state === 'ferme') {
 			await db.close();
 			return res.status(400).json({ error: 'already_closed', message: 'Ce giveaway est déjà fermé' });
 		}
