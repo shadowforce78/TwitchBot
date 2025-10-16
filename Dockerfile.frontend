@@ -3,11 +3,11 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 # Copier les fichiers package
-COPY TwitchBot/package*.json ./
+COPY package*.json ./
 RUN npm install
 
 # Copier le code source Astro
-COPY TwitchBot ./
+COPY . ./
 RUN npm run build
 
 # Stage runtime avec nginx
