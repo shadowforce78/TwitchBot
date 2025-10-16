@@ -7,7 +7,7 @@ COPY TwitchBot/package*.json ./
 RUN npm install
 
 # Copier le code source Astro
-COPY TwitchBot ./
+COPY ../TwitchBot ./
 RUN npm run build
 
 # Stage runtime avec nginx
