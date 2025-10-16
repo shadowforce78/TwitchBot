@@ -9,9 +9,8 @@ RUN npm install --production
 # Copier les fichiers nécessaires
 COPY serveur ./serveur
 COPY src ./src
-COPY data ./data
 
-# Créer les répertoires nécessaires
+# Créer les répertoires nécessaires (data est géré par volume dans docker-compose)
 RUN mkdir -p /app/data
 RUN mkdir -p /app/logs
 

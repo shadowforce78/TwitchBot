@@ -28,6 +28,9 @@ services:
       dockerfile: Dockerfile.frontend
     container_name: twitchbot-frontend
     env_file: .env
+    volumes:
+      - ./data:/app/data                    # persistance des données
+      - ./logs:/app/logs                    # logs du serveur
     expose:
       - "3003"
     environment:
