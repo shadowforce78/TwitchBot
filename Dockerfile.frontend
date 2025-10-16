@@ -2,11 +2,18 @@
 FROM node:20-alpine
 WORKDIR /app
 
-# Copier d'abord tout le répertoire serveur
-COPY serveur ./serveur
+# Copier le package.json racine et installer les dépendances
+COPY package*.json ./
+RUN npm install --production
 
-# Installer les dépendances de production
-RUN cd serveur && npm install --production
+# Copier les fichiers nécessaires
+COPY serveur ./serveur
+COPY src ./src
+COPY data ./data
+
+# Créer les répertoires nécessaires
+RUN mkdir -p /app/data
+RUN mkdir -p /app/logs
 
 EXPOSE 3003
 
