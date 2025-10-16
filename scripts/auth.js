@@ -9,7 +9,7 @@ const axios = require('axios');
 
 const CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET;
-const REDIRECT_URI = process.env.TWITCH_REDIRECT_URI || 'http://localhost:3003/callback';
+const REDIRECT_URI = process.env.TWITCH_REDIRECT_URI;
 
 if (!CLIENT_ID || !CLIENT_SECRET) {
   console.error('[auth] TWITCH_CLIENT_ID et TWITCH_CLIENT_SECRET sont requis dans .env');

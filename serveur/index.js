@@ -12,7 +12,7 @@ const PORT = process.env.WEB_PORT || 3003;
 const CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET;
 const CHANNEL_LOGIN = (process.env.TWITCH_CHANNEL || '').replace(/^#/, '');
-const BASE_URL = process.env.WEB_BASE_URL || `http://localhost:${PORT}`;
+const BASE_URL = process.env.WEB_BASE_URL;
 // Whitelist de logins autorisés même sans statut mod (séparés par virgule ou espaces)
 const WHITELIST = (process.env.PANEL_WHITELIST || '')
 	.toLowerCase()
