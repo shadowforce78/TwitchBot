@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   twitchbot-backend:
     build:
@@ -26,8 +24,8 @@ services:
 
   twitchbot-frontend:
     build:
-      context: ./serveur/public
-      dockerfile: ../../Dockerfile.frontend
+      context: .
+      dockerfile: Dockerfile.frontend
     container_name: twitchbot-frontend
     expose:
       - "80"
