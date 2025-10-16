@@ -219,7 +219,7 @@ function editGiveaway(id) {
     document.getElementById('edit-giveaway-title').value = giveaway.titre || giveaway.title || '';
     document.getElementById('edit-giveaway-reward').value = giveaway.prix || giveaway.reward || '';
     document.getElementById('edit-giveaway-description').value = giveaway.description || '';
-    document.getElementById('edit-giveaway-thumbnail').value = giveaway.thumbnail || '';
+    document.getElementById('edit-giveaway-thumbnail').value = giveaway.image || giveaway.thumbnail || '';
     
     if (giveaway.date_tirage || giveaway.end_date) {
         const endDate = new Date(giveaway.date_tirage || giveaway.end_date);
