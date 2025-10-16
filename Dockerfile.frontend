@@ -1,0 +1,30 @@
+# Stage de build
+FROM node:20-alpine AS build
+WORKDIR /app
+
+# Copier les fichiers package
+COPY ../../KiwiPanelBotV2/package*.json ./
+RUN npm install
+
+# Copier le code source
+COPY ../../KiwiPanelBotV2 ./
+RUN npm run build
+
+# Stage runtime avec nginx
+FROM nginx:alpine AS runtime
+
+# Copier la configuration nginx personnalisée
+COPY nginx.conf /etc/nginx/conf.d/default.conf
+
+# Copier les fichiers buildés depuis Astro
+COPY --from=build /app/dist /usr/share/nginx/html
+
+# Copier aussi les fichiers publics du serveur (si nécessaire)
+COPY . /usr/share/nginx/html/legacy
+
+EXPOSE 80
+
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
+
+CMD ["nginx", "-g", "daemon off;"]

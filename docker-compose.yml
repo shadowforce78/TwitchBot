@@ -1,0 +1,65 @@
+version: "3.8"
+
+services:
+  twitchbot-backend:
+    build:
+      context: .
+      dockerfile: Dockerfile.backend
+    container_name: twitchbot-backend
+    env_file: .env
+    volumes:
+      - ./data:/app/data                    # persistance des données (command-state.json, etc.)
+      - ./logs:/app/logs                    # logs du bot
+    expose:
+      - "3003"
+    environment:
+      - VIRTUAL_HOST=api.twitchbot.saumondeluxe.com
+      - VIRTUAL_PORT=3003
+      - LETSENCRYPT_HOST=api.twitchbot.saumondeluxe.com
+      - LETSENCRYPT_EMAIL=planque.adam@gmail.com
+      - NODE_ENV=production
+    restart: unless-stopped
+    networks:
+      - proxy-tier
+    depends_on:
+      - mysql
+
+  twitchbot-frontend:
+    build:
+      context: ./serveur/public
+      dockerfile: ../../Dockerfile.frontend
+    container_name: twitchbot-frontend
+    expose:
+      - "80"
+    environment:
+      - VIRTUAL_HOST=twitchbot.saumondeluxe.com
+      - LETSENCRYPT_HOST=twitchbot.saumondeluxe.com
+      - LETSENCRYPT_EMAIL=planque.adam@gmail.com
+    restart: unless-stopped
+    networks:
+      - proxy-tier
+
+  mysql:
+    image: mysql:8.0
+    container_name: twitchbot-mysql
+    env_file: .env
+    environment:
+      - MYSQL_ROOT_PASSWORD=${DB_PASSWORD}
+      - MYSQL_DATABASE=${DB_NAME}
+      - MYSQL_USER=${DB_USER}
+      - MYSQL_PASSWORD=${DB_PASSWORD}
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql  # optionnel: init DB
+    expose:
+      - "3306"
+    restart: unless-stopped
+    networks:
+      - proxy-tier
+
+volumes:
+  mysql-data:
+
+networks:
+  proxy-tier:
+    external: true

@@ -1,0 +1,44 @@
+# Build stage
+FROM node:20-alpine AS build
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+COPY serveur/package*.json ./serveur/
+
+# Install dependencies
+RUN npm install
+RUN cd serveur && npm install
+
+# Copy application code
+COPY . .
+
+# Production stage
+FROM node:20-alpine AS runtime
+WORKDIR /app
+
+# Install production dependencies only
+COPY package*.json ./
+COPY serveur/package*.json ./serveur/
+RUN npm install --production
+RUN cd serveur && npm install --production
+
+# Copy application files
+COPY --from=build /app/src ./src
+COPY --from=build /app/serveur ./serveur
+COPY --from=build /app/scripts ./scripts
+COPY --from=build /app/data ./data
+
+# Create necessary directories
+RUN mkdir -p /app/data
+RUN mkdir -p /app/logs
+
+# Expose port
+EXPOSE 3003
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:3003/health', (r) => {process.exit(r.statusCode === 200 ? 0 : 1)})"
+
+# Start both bot and server
+CMD ["sh", "-c", "node src/index.js & node serveur/index.js"]
