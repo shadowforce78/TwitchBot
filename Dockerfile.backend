@@ -4,30 +4,30 @@ WORKDIR /app
 
 # Copy package files
 COPY package*.json ./
-COPY serveur/package*.json ./serveur/
-
-# Install dependencies
 RUN npm install
-RUN cd serveur && npm install
 
-# Copy application code
+# Copy application code (this includes serveur directory)
 COPY . .
+
+# Install serveur dependencies
+RUN cd serveur && npm install
 
 # Production stage
 FROM node:20-alpine AS runtime
 WORKDIR /app
 
-# Install production dependencies only
+# Copy package files and install production dependencies
 COPY package*.json ./
-COPY serveur/package*.json ./serveur/
 RUN npm install --production
-RUN cd serveur && npm install --production
 
 # Copy application files
 COPY --from=build /app/src ./src
 COPY --from=build /app/serveur ./serveur
 COPY --from=build /app/scripts ./scripts
 COPY --from=build /app/data ./data
+
+# Install serveur production dependencies
+RUN cd serveur && npm install --production
 
 # Create necessary directories
 RUN mkdir -p /app/data
