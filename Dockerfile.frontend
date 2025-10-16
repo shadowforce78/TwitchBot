@@ -3,11 +3,11 @@ FROM node:20-alpine AS build
 WORKDIR /app
 
 # Copier les fichiers package
-COPY ../../KiwiPanelBotV2/package*.json ./
+COPY ../../TwitchBot/package*.json ./
 RUN npm install
 
 # Copier le code source
-COPY ../../KiwiPanelBotV2 ./
+COPY ../../TwitchBot ./
 RUN npm run build
 
 # Stage runtime avec nginx

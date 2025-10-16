@@ -9,13 +9,13 @@ logs/
 # Node modules
 node_modules/
 serveur/node_modules/
-KiwiPanelBotV2/node_modules/
+TwitchBot/node_modules/
 
 # Build outputs
 dist/
 .astro/
-KiwiPanelBotV2/dist/
-KiwiPanelBotV2/.astro/
+TwitchBot/dist/
+TwitchBot/.astro/
 
 # Data persistence
 data/
