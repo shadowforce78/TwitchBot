@@ -1,27 +1,20 @@
-# Stage de build
-FROM node:20-alpine AS build
+# Production stage
+FROM node:20-alpine
 WORKDIR /app
 
-# Copier les fichiers package
-COPY package*.json ./
-RUN npm install
+# Copier les fichiers serveur
+COPY serveur/package*.json ./serveur/
+RUN cd serveur && npm install --production
 
-# Copier le code source Astro
-COPY . ./
-RUN npm run build
+# Copier les fichiers du serveur
+COPY serveur ./serveur
 
-# Stage runtime avec nginx
-FROM nginx:alpine AS runtime
+# Copier le .env si nécessaire (ou passer via docker-compose)
+# COPY .env ./
 
-# Copier la configuration nginx personnalisée
-COPY nginx.conf /etc/nginx/conf.d/default.conf
-
-# Copier les fichiers buildés depuis Astro
-COPY --from=build /app/dist /usr/share/nginx/html
-
-EXPOSE 80
+EXPOSE 3003
 
 HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
-  CMD wget --quiet --tries=1 --spider http://localhost/ || exit 1
+  CMD wget --quiet --tries=1 --spider http://localhost:3003/ || exit 1
 
-CMD ["nginx", "-g", "daemon off;"]
+CMD ["node", "serveur/index.js"]
