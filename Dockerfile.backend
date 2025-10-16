@@ -24,7 +24,6 @@ RUN npm install --production
 COPY --from=build /app/src ./src
 COPY --from=build /app/serveur ./serveur
 COPY --from=build /app/scripts ./scripts
-COPY --from=build /app/data ./data
 
 # Install serveur production dependencies
 RUN cd serveur && npm install --production
