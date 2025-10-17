@@ -297,9 +297,121 @@ function showWinnerModal(result) {
     openModal('winner-modal');
 }
 
-function viewGiveawayResults(id) {
-    // TODO: Implement view results functionality
-    showNotification('Fonction en développement', 'info');
+async function viewGiveawayResults(id) {
+    try {
+        const giveaway = giveaways.find(g => g.id === id);
+        if (!giveaway) {
+            showNotification('Giveaway introuvable', 'error');
+            return;
+        }
+
+        // Récupérer les participants
+        const response = await fetch(`/api/giveaways/${id}/participants`);
+        if (!response.ok) {
+            throw new Error('Erreur lors de la récupération des participants');
+        }
+        const participants = await response.json();
+
+        const resultsContent = document.getElementById('results-content');
+        if (resultsContent) {
+            resultsContent.innerHTML = `
+                <div class="results-container">
+                    <div class="giveaway-summary">
+                        <h4>${escapeHtml(giveaway.titre || giveaway.title)}</h4>
+                        <p>${escapeHtml(giveaway.description || 'Aucune description')}</p>
+                        ${giveaway.prix || giveaway.reward ? `
+                            <div class="prize-info">
+                                <strong>🎁 Prix:</strong> ${escapeHtml(giveaway.prix || giveaway.reward)}
+                                ${giveaway.cashprize > 0 ? ` - ${formatCurrency(giveaway.cashprize)}` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+
+                    <div class="results-stats">
+                        <div class="stat-card">
+                            <div class="stat-icon">👥</div>
+                            <div class="stat-value">${participants.length}</div>
+                            <div class="stat-label">Participants</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">🏆</div>
+                            <div class="stat-value">${giveaway.nb_reward || 1}</div>
+                            <div class="stat-label">Gagnant${(giveaway.nb_reward || 1) > 1 ? 's' : ''}</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-icon">${giveaway.state === 'ferme' ? '🔒' : '🟢'}</div>
+                            <div class="stat-value">${giveaway.state === 'ferme' ? 'Fermé' : 'Ouvert'}</div>
+                            <div class="stat-label">Statut</div>
+                        </div>
+                    </div>
+
+                    ${giveaway.winner_username ? `
+                        <div class="winner-section">
+                            <h5>🏆 Gagnant</h5>
+                            <div class="winner-card">
+                                <div class="winner-trophy">🎉</div>
+                                <div class="winner-details">
+                                    <div class="winner-username">${escapeHtml(giveaway.winner_username)}</div>
+                                    <div class="winner-badge">Gagnant officiel</div>
+                                </div>
+                            </div>
+                        </div>
+                    ` : ''}
+
+                    ${participants.length > 0 ? `
+                        <div class="participants-section">
+                            <h5>👥 Liste des Participants (${participants.length})</h5>
+                            <div class="participants-list">
+                                ${participants.map(p => `
+                                    <div class="participant-item ${giveaway.winner_id_twitch === p.id_twitch ? 'is-winner' : ''}">
+                                        <span class="participant-name">${escapeHtml(p.username)}</span>
+                                        ${giveaway.winner_id_twitch === p.id_twitch ? '<span class="winner-tag">🏆 Gagnant</span>' : ''}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        </div>
+                    ` : '<p class="text-center text-secondary">Aucun participant</p>'}
+                </div>
+
+                <style>
+                    .results-container { padding: 1rem 0; }
+                    .giveaway-summary { margin-bottom: 1.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--border); }
+                    .giveaway-summary h4 { margin: 0 0 0.5rem 0; color: var(--primary); }
+                    .prize-info { margin-top: 0.5rem; padding: 0.5rem; background: var(--secondary-bg); border-radius: 4px; }
+                    
+                    .results-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-bottom: 1.5rem; }
+                    .stat-card { text-align: center; padding: 1rem; background: var(--bg-secondary); border-radius: 8px; border: 1px solid var(--border); }
+                    .stat-icon { font-size: 2rem; margin-bottom: 0.5rem; }
+                    .stat-value { font-size: 1.5rem; font-weight: bold; color: var(--primary); }
+                    .stat-label { font-size: 0.875rem; color: var(--text-secondary); margin-top: 0.25rem; }
+                    
+                    .winner-section { margin-bottom: 1.5rem; }
+                    .winner-section h5 { margin: 0 0 1rem 0; font-size: 1.1rem; }
+                    .winner-card { display: flex; align-items: center; gap: 1rem; padding: 1rem; background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%); border-radius: 8px; box-shadow: 0 2px 8px rgba(255, 215, 0, 0.3); }
+                    .winner-trophy { font-size: 3rem; }
+                    .winner-username { font-size: 1.25rem; font-weight: bold; color: #333; }
+                    .winner-badge { font-size: 0.875rem; color: #666; }
+                    
+                    .participants-section h5 { margin: 0 0 1rem 0; font-size: 1.1rem; }
+                    .participants-list { max-height: 400px; overflow-y: auto; border: 1px solid var(--border); border-radius: 8px; }
+                    .participant-item { display: flex; justify-content: space-between; align-items: center; padding: 0.75rem 1rem; border-bottom: 1px solid var(--border); transition: background 0.2s; }
+                    .participant-item:last-child { border-bottom: none; }
+                    .participant-item:hover { background: var(--bg-secondary); }
+                    .participant-item.is-winner { background: #fff9e6; font-weight: bold; }
+                    .participant-name { color: var(--text); }
+                    .winner-tag { font-size: 0.875rem; color: #f59e0b; font-weight: bold; }
+                </style>
+            `;
+        }
+        openModal('results-modal');
+    } catch (error) {
+        console.error('Erreur récupération résultats:', error);
+        showNotification('Erreur lors de la récupération des résultats', 'error');
+    }
+}
+
+function formatCurrency(amount) {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(amount);
 }
 
 // ==== FORM HANDLERS ====

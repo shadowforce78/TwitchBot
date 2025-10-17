@@ -290,7 +290,7 @@ function showWinnerModal(result) {
                 <p style="font-size: 1.2rem; color: var(--secondary); margin: 1rem 0;">
                     ${escapeHtml(result.giveaway.prix || result.giveaway.reward)}
                 </p>
-                <p class="text-secondary">Le gagnant a été notifié automatiquement.</p>
+                
             </div>
         `;
     }
@@ -298,8 +298,19 @@ function showWinnerModal(result) {
 }
 
 function viewGiveawayResults(id) {
-    // TODO: Implement view results functionality
-    showNotification('Fonction en développement', 'info');
+    const giveaway = giveaways.find(g => g.id === id);
+    if (!giveaway) return;
+
+    // Display giveaway results
+    const resultsContent = document.getElementById('results-content');
+    if (resultsContent) {
+        resultsContent.innerHTML = `
+            <h4>Résultats du giveaway "${escapeHtml(giveaway.titre || giveaway.title)}"</h4>
+            <p><strong>Gagnant :</strong> ${escapeHtml(giveaway.winner_username || 'Inconnu')}</p>
+            <p><strong>Récompense :</strong> ${escapeHtml(giveaway.prix || giveaway.reward || 'Aucune')}</p>
+        `;
+    }
+    openModal('results-modal');
 }
 
 // ==== FORM HANDLERS ====
