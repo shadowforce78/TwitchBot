@@ -282,9 +282,12 @@ class DatabaseManager {
     async getAllGiveaways() {
         return await this.query(`
             SELECT g.*, 
-                   COUNT(p.user_id) as participant_count
+                   COUNT(p.user_id) as participant_count,
+                   u.username as winner_username,
+                   u.id_twitch as winner_id_twitch
             FROM giveaway g
             LEFT JOIN giveaway_participants p ON g.id = p.giveaway_id
+            LEFT JOIN user u ON g.winner_twitch_id = u.id_twitch
             GROUP BY g.id
             ORDER BY g.created_at DESC
         `);

@@ -181,6 +181,10 @@ function displayGiveaways() {
                         `<span>📅 Fin: ${formatDate(giveaway.date_tirage || giveaway.end_date)}</span>` : 
                         ''
                     }
+                    ${!isGiveawayActive(giveaway) && giveaway.winner_username ? 
+                        `<span style="color: var(--success); font-weight: bold;">🏆 Gagnant: ${escapeHtml(giveaway.winner_username)}</span>` : 
+                        ''
+                    }
                 </div>
             </div>
             <div class="giveaway-actions">
@@ -287,7 +291,6 @@ function showWinnerModal(result) {
                 <p style="font-size: 1.2rem; color: var(--secondary); margin: 1rem 0;">
                     ${escapeHtml(result.giveaway.prix || result.giveaway.reward)}
                 </p>
-                <p class="text-secondary">Le gagnant a été notifié automatiquement.</p>
             </div>
         `;
     }

@@ -2,20 +2,14 @@
 -- version 5.2.2
 -- https://www.phpmyadmin.net/
 --
--- Hôte : 127.0.0.1:3306
--- Généré le : sam. 27 sep. 2025 à 13:36
+-- Hôte : 127.0.0.1
+-- Généré le : ven. 17 oct. 2025 à 23:20
 -- Version du serveur : 11.8.3-MariaDB-log
 -- Version de PHP : 7.2.34
 
 SET SQL_MODE = "NO_AUTO_VALUE_ON_ZERO";
 START TRANSACTION;
 SET time_zone = "+00:00";
-
-
-/*!40101 SET @OLD_CHARACTER_SET_CLIENT=@@CHARACTER_SET_CLIENT */;
-/*!40101 SET @OLD_CHARACTER_SET_RESULTS=@@CHARACTER_SET_RESULTS */;
-/*!40101 SET @OLD_COLLATION_CONNECTION=@@COLLATION_CONNECTION */;
-/*!40101 SET NAMES utf8mb4 */;
 
 --
 -- Base de données : `u379386034_giveaway`
@@ -37,6 +31,7 @@ CREATE TABLE `giveaway` (
   `cashprize` decimal(10,2) DEFAULT 0.00,
   `nb_participants` int(11) DEFAULT 0,
   `state` enum('ouvert','ferme') DEFAULT 'ouvert',
+  `winner_twitch_id` int(11) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT current_timestamp(),
   `date_tirage` datetime DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -45,8 +40,8 @@ CREATE TABLE `giveaway` (
 -- Déchargement des données de la table `giveaway`
 --
 
-INSERT INTO `giveaway` (`id`, `titre`, `description`, `image`, `prix`, `nb_reward`, `cashprize`, `nb_participants`, `state`, `created_at`, `date_tirage`) VALUES
-(3, 'Nitro', 'Nitro discord', 'https://www.republic-of-gamers.fr/wp-content/uploads/2025/09/Avantages-minimaux-impact-maximum-comme-Discord-utilise-Nitro-pour-nourrir.webp.webp', 'Nitro Discord', 2, 20.00, 0, 'ouvert', '2025-09-21 18:46:37', '2025-09-23 10:00:00');
+INSERT INTO `giveaway` (`id`, `titre`, `description`, `image`, `prix`, `nb_reward`, `cashprize`, `nb_participants`, `state`, `winner_twitch_id`, `created_at`, `date_tirage`) VALUES
+(3, 'Nitro', 'Nitro discord', 'https://media.discordapp.net/attachments/936682592281960528/1427260179581505567/20251013_134213.jpg?ex=68f182e0&is=68f03160&hm=90eed70eb4dde71f95f3de1e17798f7c1cc5e74739f9d3bdeaabc65b9ea320ec&=&format=webp&width=1258&height=680', 'Nitro Discord mdr ', 2, 20.00, 3, 'ouvert', NULL, '2025-09-21 18:46:37', '2025-09-22 18:00:00');
 
 -- --------------------------------------------------------
 
@@ -58,6 +53,15 @@ CREATE TABLE `giveaway_participants` (
   `giveaway_id` int(11) NOT NULL,
   `user_id` int(11) NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+--
+-- Déchargement des données de la table `giveaway_participants`
+--
+
+INSERT INTO `giveaway_participants` (`giveaway_id`, `user_id`) VALUES
+(3, 423479054),
+(3, 554177101),
+(3, 1362804503);
 
 -- --------------------------------------------------------
 
@@ -77,7 +81,8 @@ CREATE TABLE `pass` (
 
 INSERT INTO `pass` (`id`, `id_twitch`, `valide`) VALUES
 (6, 423479054, 1),
-(7, 554177101, 1);
+(7, 554177101, 1),
+(8, 1362804503, 1);
 
 -- --------------------------------------------------------
 
@@ -97,7 +102,8 @@ CREATE TABLE `user` (
 
 INSERT INTO `user` (`id`, `username`, `id_twitch`) VALUES
 (6, 'levraisaumondeluxe', 423479054),
-(7, 'kiwitfb', 554177101);
+(7, 'kiwitfb', 554177101),
+(8, 'redpandalovesushis', 1362804503);
 
 --
 -- Index pour les tables déchargées
@@ -138,19 +144,19 @@ ALTER TABLE `user`
 -- AUTO_INCREMENT pour la table `giveaway`
 --
 ALTER TABLE `giveaway`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=5;
 
 --
 -- AUTO_INCREMENT pour la table `pass`
 --
 ALTER TABLE `pass`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=9;
 
 --
 -- AUTO_INCREMENT pour la table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
 
 --
 -- Contraintes pour les tables déchargées
@@ -169,7 +175,3 @@ ALTER TABLE `giveaway_participants`
 ALTER TABLE `pass`
   ADD CONSTRAINT `pass_ibfk_1` FOREIGN KEY (`id_twitch`) REFERENCES `user` (`id_twitch`) ON DELETE CASCADE;
 COMMIT;
-
-/*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;
-/*!40101 SET CHARACTER_SET_RESULTS=@OLD_CHARACTER_SET_RESULTS */;
-/*!40101 SET COLLATION_CONNECTION=@OLD_COLLATION_CONNECTION */;

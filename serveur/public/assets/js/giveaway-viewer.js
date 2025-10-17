@@ -205,10 +205,10 @@ function createGiveawayCard(giveaway, isActive) {
                     </div>
                 ` : ''}
                 
-                ${!isActive && giveaway.winner ? `
+                ${!isActive && (giveaway.winner || giveaway.winner_username) ? `
                     <div class="winner-info">
                         <div class="winner-label">🏆 Gagnant</div>
-                        <div class="winner-name">${escapeHtml(giveaway.winner)}</div>
+                        <div class="winner-name">${escapeHtml(giveaway.winner || giveaway.winner_username)}</div>
                     </div>
                 ` : ''}
             </div>
@@ -254,6 +254,13 @@ function openGiveawayModal(giveawayId) {
                 <span class="detail-label">gagnant${(giveaway.nb_reward || 1) > 1 ? 's' : ''}</span>
             </div>
         </div>
+        
+        ${!isGiveawayActive(giveaway) && (giveaway.winner || giveaway.winner_username) ? `
+            <div class="winner-info" style="margin-top: 1rem; padding: 1rem; background: var(--success-bg, #d4edda); border-radius: 8px; text-align: center;">
+                <div class="winner-label" style="font-size: 1.2rem; font-weight: bold; color: var(--success, #28a745); margin-bottom: 0.5rem;">🏆 Gagnant</div>
+                <div class="winner-name" style="font-size: 1.5rem; font-weight: bold;">${escapeHtml(giveaway.winner || giveaway.winner_username)}</div>
+            </div>
+        ` : ''}
     `;
     
     // Default requirements

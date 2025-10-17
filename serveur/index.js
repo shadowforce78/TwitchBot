@@ -858,21 +858,30 @@ app.post('/api/giveaways/:id/draw-winner', requireAuth, requireAdmin, async (req
 			return res.status(400).json({ error: 'no_participants', message: 'Aucun participant pour ce giveaway' });
 		}
 
-		// Sélectionner un gagnant aléatoire
-		const winner = participants[Math.floor(Math.random() * participants.length)];
+	// Sélectionner un gagnant aléatoire
+	const winner = participants[Math.floor(Math.random() * participants.length)];
 
-		// Marquer le giveaway comme terminé et enregistrer le gagnant
-		await db.setGiveawayWinner(parseInt(id), winner.twitch_id);
+	// Marquer le giveaway comme terminé et enregistrer le gagnant
+	await db.setGiveawayWinner(parseInt(id), winner.id_twitch);
 
-		res.json({
-			success: true,
-			message: 'Gagnant tiré au sort',
-			winner: {
-				display_name: winner.display_name,
-				twitch_id: winner.twitch_id
-			}
-		});
-		await db.close();
+	// Récupérer les informations complètes du giveaway
+	const giveaway = await db.getGiveawayById(parseInt(id));
+
+	res.json({
+		success: true,
+		message: 'Gagnant tiré au sort',
+		winner: {
+			username: winner.username,
+			displayName: winner.username,
+			id_twitch: winner.id_twitch
+		},
+		giveaway: {
+			titre: giveaway.titre,
+			prix: giveaway.prix,
+			reward: giveaway.prix
+		}
+	});
+	await db.close();
 	} catch (error) {
 		console.error('Erreur tirage gagnant:', error);
 		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
