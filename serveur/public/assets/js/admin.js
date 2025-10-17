@@ -198,6 +198,9 @@ function displayGiveaways() {
                     <button class="btn btn-success btn-sm" onclick="drawWinner(${giveaway.id})">🎲 Tirer au sort</button>
                 ` : `
                     <button class="btn btn-outline btn-sm" onclick="viewGiveawayResults(${giveaway.id})">👁️ Voir résultats</button>
+                    ${(giveaway.state === 'ferme' || giveaway.status === 'ended') && giveaway.winner_twitch_id ? `
+                        <button class="btn btn-secondary btn-sm" onclick="rerollWinner(${giveaway.id})">🔄 Retirer au sort</button>
+                    ` : ''}
                 `}
                 <button class="btn btn-error btn-sm" onclick="deleteGiveaway(${giveaway.id})">🗑️ Supprimer</button>
             </div>
@@ -253,6 +256,30 @@ async function drawWinner(id) {
     }
 }
 
+async function rerollWinner(id) {
+    if (!confirm('Êtes-vous sûr de vouloir retirer au sort un nouveau gagnant ? L\'ancien gagnant sera remplacé.')) {
+        return;
+    }
+
+    try {
+        const response = await fetch(`/api/giveaways/${id}/reroll-winner`, {
+            method: 'POST'
+        });
+
+        if (response.ok) {
+            const result = await response.json();
+            showWinnerModal(result, true);
+            await loadGiveaways(); // Reload giveaways
+        } else {
+            const error = await response.json();
+            showNotification(error.message || 'Erreur lors du reroll', 'error');
+        }
+    } catch (error) {
+        console.error('Erreur reroll:', error);
+        showNotification('Erreur de connexion', 'error');
+    }
+}
+
 async function deleteGiveaway(id) {
     const giveaway = giveaways.find(g => g.id === id);
     if (!giveaway) return;
@@ -279,13 +306,14 @@ async function deleteGiveaway(id) {
     }
 }
 
-function showWinnerModal(result) {
+function showWinnerModal(result, isReroll = false) {
     const winnerContent = document.getElementById('winner-content');
     if (winnerContent) {
         winnerContent.innerHTML = `
             <div class="text-center">
                 <div style="font-size: 4rem; margin-bottom: 1rem;">🎉</div>
-                <h3>Félicitations !</h3>
+                <h3>${isReroll ? 'Nouveau gagnant !' : 'Félicitations !'}</h3>
+                ${isReroll ? '<p style="color: var(--warning); margin-bottom: 1rem;">Un nouveau gagnant a été tiré au sort</p>' : ''}
                 <p><strong>${escapeHtml(result.winner.displayName || result.winner.username)}</strong> a gagné :</p>
                 <p style="font-size: 1.2rem; color: var(--secondary); margin: 1rem 0;">
                     ${escapeHtml(result.giveaway.prix || result.giveaway.reward)}

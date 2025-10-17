@@ -888,6 +888,71 @@ app.post('/api/giveaways/:id/draw-winner', requireAuth, requireAdmin, async (req
 	}
 });
 
+// Retirer au sort un gagnant (reroll)
+app.post('/api/giveaways/:id/reroll-winner', requireAuth, requireAdmin, async (req, res) => {
+	try {
+		const { id } = req.params;
+		const db = new DatabaseManager();
+
+		// Récupérer le giveaway actuel pour voir l'ancien gagnant
+		const giveaway = await db.getGiveawayById(parseInt(id));
+		
+		if (!giveaway) {
+			return res.status(404).json({ error: 'not_found', message: 'Giveaway introuvable' });
+		}
+
+		if (giveaway.state !== 'ferme') {
+			return res.status(400).json({ error: 'invalid_state', message: 'Le giveaway doit être fermé pour retirer au sort' });
+		}
+
+		const oldWinnerId = giveaway.winner_twitch_id;
+
+		// Récupérer les participants du giveaway
+		const allParticipants = await db.getGiveawayParticipants(parseInt(id));
+
+		if (allParticipants.length === 0) {
+			return res.status(400).json({ error: 'no_participants', message: 'Aucun participant pour ce giveaway' });
+		}
+
+		// Filtrer l'ancien gagnant pour ne pas le retirer
+		const participants = oldWinnerId 
+			? allParticipants.filter(p => p.id_twitch !== oldWinnerId)
+			: allParticipants;
+
+		if (participants.length === 0) {
+			return res.status(400).json({ 
+				error: 'no_other_participants', 
+				message: 'Aucun autre participant disponible pour le reroll' 
+			});
+		}
+
+		// Sélectionner un nouveau gagnant aléatoire
+		const winner = participants[Math.floor(Math.random() * participants.length)];
+
+		// Mettre à jour le gagnant
+		await db.setGiveawayWinner(parseInt(id), winner.id_twitch);
+
+		res.json({
+			success: true,
+			message: 'Nouveau gagnant tiré au sort',
+			winner: {
+				username: winner.username,
+				displayName: winner.username,
+				id_twitch: winner.id_twitch
+			},
+			giveaway: {
+				titre: giveaway.titre,
+				prix: giveaway.prix,
+				reward: giveaway.prix
+			}
+		});
+		await db.close();
+	} catch (error) {
+		console.error('Erreur reroll gagnant:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
+	}
+});
+
 // Récupérer tous les utilisateurs
 app.get('/api/users', requireAuth, requireAdmin, async (req, res) => {
 	try {
