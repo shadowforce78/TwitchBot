@@ -13,6 +13,7 @@ const CLIENT_ID = process.env.TWITCH_CLIENT_ID;
 const CLIENT_SECRET = process.env.TWITCH_CLIENT_SECRET;
 const CHANNEL_LOGIN = (process.env.TWITCH_CHANNEL || '').replace(/^#/, '');
 const BASE_URL = process.env.WEB_BASE_URL;
+const DISCORD_WEBHOOK_URL = 'https://discord.com/api/webhooks/1428892942101118976/F7cUmjzXZL3vE5JgKlrGaB24wIERsMLjjFSiWnGYVH6GBINJhR6BtutX6eQQAd-gZJ-X';
 // Whitelist de logins autorisés même sans statut mod (séparés par virgule ou espaces)
 const WHITELIST = (process.env.PANEL_WHITELIST || '')
 	.toLowerCase()
@@ -855,33 +856,40 @@ app.post('/api/giveaways/:id/draw-winner', requireAuth, requireAdmin, async (req
 		const participants = await db.getGiveawayParticipants(parseInt(id));
 
 		if (participants.length === 0) {
+			await db.close();
 			return res.status(400).json({ error: 'no_participants', message: 'Aucun participant pour ce giveaway' });
 		}
 
-	// Sélectionner un gagnant aléatoire
-	const winner = participants[Math.floor(Math.random() * participants.length)];
+		// Sélectionner un gagnant aléatoire
+		const winner = participants[Math.floor(Math.random() * participants.length)];
 
-	// Marquer le giveaway comme terminé et enregistrer le gagnant
-	await db.setGiveawayWinner(parseInt(id), winner.id_twitch);
+		// Marquer le giveaway comme terminé et enregistrer le gagnant
+		await db.setGiveawayWinner(parseInt(id), winner.id_twitch);
 
-	// Récupérer les informations complètes du giveaway
-	const giveaway = await db.getGiveawayById(parseInt(id));
+		// Récupérer les informations complètes du giveaway
+		const giveaway = await db.getGiveawayById(parseInt(id));
 
-	res.json({
-		success: true,
-		message: 'Gagnant tiré au sort',
-		winner: {
-			username: winner.username,
-			displayName: winner.username,
-			id_twitch: winner.id_twitch
-		},
-		giveaway: {
-			titre: giveaway.titre,
-			prix: giveaway.prix,
-			reward: giveaway.prix
-		}
-	});
-	await db.close();
+		// Envoyer notification Discord
+		await sendDiscordNotification(
+			{ username: winner.username, displayName: winner.username, id_twitch: winner.id_twitch },
+			{ ...giveaway, participant_count: participants.length }
+		);
+
+		res.json({
+			success: true,
+			message: 'Gagnant tiré au sort',
+			winner: {
+				username: winner.username,
+				displayName: winner.username,
+				id_twitch: winner.id_twitch
+			},
+			giveaway: {
+				titre: giveaway.titre,
+				prix: giveaway.prix,
+				reward: giveaway.prix
+			}
+		});
+		await db.close();
 	} catch (error) {
 		console.error('Erreur tirage gagnant:', error);
 		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
@@ -932,6 +940,13 @@ app.post('/api/giveaways/:id/reroll-winner', requireAuth, requireAdmin, async (r
 		// Mettre à jour le gagnant
 		await db.setGiveawayWinner(parseInt(id), winner.id_twitch);
 
+		// Envoyer notification Discord pour le reroll
+		await sendDiscordNotification(
+			{ username: winner.username, displayName: winner.username, id_twitch: winner.id_twitch },
+			{ ...giveaway, participant_count: allParticipants.length },
+			true // isReroll
+		);
+
 		res.json({
 			success: true,
 			message: 'Nouveau gagnant tiré au sort',
@@ -952,6 +967,114 @@ app.post('/api/giveaways/:id/reroll-winner', requireAuth, requireAdmin, async (r
 		res.status(500).json({ error: 'internal', message: 'Erreur serveur' });
 	}
 });
+
+// ==== FONCTION DE NOTIFICATION DISCORD ====
+async function sendDiscordNotification(winner, giveaway, isReroll = false) {
+	try {
+		const embed = {
+			title: isReroll ? "🔄 Giveaway Reroll - Nouveau Gagnant !" : "🎉 Giveaway Terminé - Nouveau Gagnant !",
+			description: `Le giveaway **${giveaway.titre}** ${isReroll ? 'a été retiré au sort' : 'est terminé'} !`,
+			color: isReroll ? 0xFFA500 : 0x9146FF, // Orange pour reroll, Violet Twitch pour normal
+			fields: [
+				{
+					name: "🏆 Gagnant",
+					value: winner.username || winner.displayName,
+					inline: true
+				},
+				{
+					name: "🎁 Récompense",
+					value: giveaway.prix || "Récompense non spécifiée",
+					inline: true
+				},
+				{
+					name: "👥 Participants",
+					value: giveaway.participant_count ? giveaway.participant_count.toString() : "0",
+					inline: true
+				}
+			],
+			thumbnail: giveaway.image ? { url: giveaway.image } : undefined,
+			timestamp: new Date().toISOString(),
+			footer: {
+				text: isReroll ? "TwitchBot Giveaway System - Reroll" : "TwitchBot Giveaway System"
+			}
+		};
+
+		await axios.post(DISCORD_WEBHOOK_URL, {
+			username: "TwitchBot Giveaways",
+			avatar_url: "https://static-cdn.jtvnw.net/jtv_user_pictures/8a6381c7-d0c0-4576-b179-38bd5ce1d6af-profile_image-300x300.png",
+			embeds: [embed]
+		});
+
+		console.log(`[Discord] Notification ${isReroll ? 'reroll' : 'tirage'} envoyée pour le giveaway #${giveaway.id}`);
+	} catch (error) {
+		console.error('[Discord] Erreur envoi webhook:', error.message);
+	}
+}
+
+// ==== VÉRIFICATION AUTOMATIQUE DES GIVEAWAYS ====
+async function checkGiveawaysForAutoDraw() {
+	try {
+		const db = new DatabaseManager();
+		
+		// Récupérer les giveaways actifs avec une date de tirage
+		const giveaways = await db.query(`
+			SELECT g.*, COUNT(p.user_id) as participant_count
+			FROM giveaway g
+			LEFT JOIN giveaway_participants p ON g.id = p.giveaway_id
+			WHERE g.state = 'ouvert' 
+			AND g.date_tirage IS NOT NULL 
+			AND g.date_tirage <= NOW()
+			GROUP BY g.id
+		`);
+
+		for (const giveaway of giveaways) {
+			console.log(`[Auto-Draw] Tirage automatique pour le giveaway #${giveaway.id}: ${giveaway.titre}`);
+			
+			// Récupérer les participants
+			const participants = await db.getGiveawayParticipants(giveaway.id);
+			
+			if (participants.length === 0) {
+				console.log(`[Auto-Draw] Aucun participant pour le giveaway #${giveaway.id}, fermeture sans gagnant`);
+				await db.closeGiveaway(giveaway.id);
+				continue;
+			}
+
+			// Sélectionner un gagnant aléatoire
+			const winner = participants[Math.floor(Math.random() * participants.length)];
+			
+			// Enregistrer le gagnant et fermer le giveaway
+			await db.setGiveawayWinner(giveaway.id, winner.id_twitch);
+			
+			console.log(`[Auto-Draw] Gagnant tiré au sort: ${winner.username} pour le giveaway #${giveaway.id}`);
+			
+			// Envoyer la notification Discord
+			await sendDiscordNotification(
+				{ username: winner.username, displayName: winner.username, id_twitch: winner.id_twitch },
+				{ ...giveaway, participant_count: participants.length }
+			);
+		}
+
+		await db.close();
+	} catch (error) {
+		console.error('[Auto-Draw] Erreur lors de la vérification des giveaways:', error);
+	}
+}
+
+// Démarrer la vérification automatique toutes les minutes
+let autoDrawInterval = null;
+
+function startAutoDrawCheck() {
+	if (autoDrawInterval) {
+		clearInterval(autoDrawInterval);
+	}
+	
+	// Vérifier immédiatement au démarrage
+	checkGiveawaysForAutoDraw();
+	
+	// Puis vérifier toutes les minutes
+	autoDrawInterval = setInterval(checkGiveawaysForAutoDraw, 60 * 1000);
+	console.log('[Auto-Draw] Système de tirage automatique démarré (vérification toutes les minutes)');
+}
 
 // Récupérer tous les utilisateurs
 app.get('/api/users', requireAuth, requireAdmin, async (req, res) => {
@@ -1031,6 +1154,9 @@ if (require.main === module) {
 	app.listen(PORT, () => {
 		console.log(`[serveur] Serveur web démarré sur ${BASE_URL}`);
 		console.log(`[oauth] Redirect URI attendu: ${OAUTH_REDIRECT}`);
+		
+		// Démarrer le système de tirage automatique
+		startAutoDrawCheck();
 	});
 }
 
@@ -1038,5 +1164,8 @@ module.exports = {
 	start: () => app.listen(PORT, () => {
 		console.log(`[serveur] Serveur web démarré sur ${BASE_URL}`);
 		console.log(`[oauth] Redirect URI attendu: ${OAUTH_REDIRECT}`);
+		
+		// Démarrer le système de tirage automatique
+		startAutoDrawCheck();
 	})
 };
