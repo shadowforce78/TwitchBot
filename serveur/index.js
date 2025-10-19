@@ -1013,25 +1013,41 @@ async function sendDiscordNotification(winner, giveaway, isReroll = false) {
 
 // ==== VÉRIFICATION AUTOMATIQUE DES GIVEAWAYS ====
 async function checkGiveawaysForAutoDraw() {
+	console.log('[Auto-Draw] Vérification des giveaways en cours...');
 	try {
 		const db = new DatabaseManager();
+		await db.init(); // S'assurer que la connexion est initialisée
 		
-		// Récupérer les giveaways actifs avec une date de tirage
+		// Récupérer TOUS les giveaways actifs avec une date de tirage
+		// On va filtrer côté JavaScript pour éviter les problèmes de fuseau horaire
 		const giveaways = await db.query(`
 			SELECT g.*, COUNT(p.user_id) as participant_count
 			FROM giveaway g
 			LEFT JOIN giveaway_participants p ON g.id = p.giveaway_id
 			WHERE g.state = 'ouvert' 
-			AND g.date_tirage IS NOT NULL 
-			AND g.date_tirage <= NOW()
+			AND g.date_tirage IS NOT NULL
 			GROUP BY g.id
 		`);
 
-		for (const giveaway of giveaways) {
+		console.log(`[Auto-Draw] ${giveaways.length} giveaway(s) actif(s) avec date trouvé(s)`);
+
+		// Filtrer côté JavaScript pour gérer correctement les fuseaux horaires
+		const now = new Date();
+		const giveawaysToProcess = giveaways.filter(g => {
+			const drawDate = new Date(g.date_tirage);
+			return drawDate <= now;
+		});
+
+		console.log(`[Auto-Draw] ${giveawaysToProcess.length} giveaway(s) à tirer au sort maintenant`);
+
+		for (const giveaway of giveawaysToProcess) {
 			console.log(`[Auto-Draw] Tirage automatique pour le giveaway #${giveaway.id}: ${giveaway.titre}`);
+			console.log(`[Auto-Draw] Date de tirage: ${giveaway.date_tirage}, Maintenant: ${now.toISOString()}`);
 			
 			// Récupérer les participants
 			const participants = await db.getGiveawayParticipants(giveaway.id);
+			
+			console.log(`[Auto-Draw] ${participants.length} participant(s) pour le giveaway #${giveaway.id}`);
 			
 			if (participants.length === 0) {
 				console.log(`[Auto-Draw] Aucun participant pour le giveaway #${giveaway.id}, fermeture sans gagnant`);
@@ -1055,6 +1071,7 @@ async function checkGiveawaysForAutoDraw() {
 		}
 
 		await db.close();
+		console.log('[Auto-Draw] Vérification terminée');
 	} catch (error) {
 		console.error('[Auto-Draw] Erreur lors de la vérification des giveaways:', error);
 	}
@@ -1075,6 +1092,18 @@ function startAutoDrawCheck() {
 	autoDrawInterval = setInterval(checkGiveawaysForAutoDraw, 60 * 1000);
 	console.log('[Auto-Draw] Système de tirage automatique démarré (vérification toutes les minutes)');
 }
+
+// Endpoint de test pour forcer une vérification manuelle
+app.post('/api/giveaways/check-auto-draw', requireAuth, requireAdmin, async (req, res) => {
+	try {
+		console.log('[API] Vérification manuelle du système auto-draw demandée');
+		await checkGiveawaysForAutoDraw();
+		res.json({ success: true, message: 'Vérification effectuée' });
+	} catch (error) {
+		console.error('[API] Erreur vérification auto-draw:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur lors de la vérification' });
+	}
+});
 
 // Récupérer tous les utilisateurs
 app.get('/api/users', requireAuth, requireAdmin, async (req, res) => {

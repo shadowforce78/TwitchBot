@@ -428,6 +428,25 @@ async function handleEditGiveaway(e) {
 }
 
 // ==== QUICK ACTIONS ====
+async function checkAutoDraw() {
+    try {
+        showNotification('Vérification du système auto-draw...', 'info');
+        const response = await fetch('/api/giveaways/check-auto-draw', { 
+            method: 'POST' 
+        });
+        
+        if (response.ok) {
+            showNotification('Vérification terminée - Consultez la console serveur', 'success');
+            await loadGiveaways(); // Reload giveaways
+        } else {
+            showNotification('Erreur lors de la vérification', 'error');
+        }
+    } catch (error) {
+        console.error('Erreur vérification auto-draw:', error);
+        showNotification('Erreur de connexion', 'error');
+    }
+}
+
 async function restartBot() {
     if (!confirm('Êtes-vous sûr de vouloir redémarrer le bot ?')) return;
     
