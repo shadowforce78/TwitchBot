@@ -225,8 +225,15 @@ function editGiveaway(id) {
     document.getElementById('edit-giveaway-thumbnail').value = giveaway.image || giveaway.thumbnail || '';
     
     if (giveaway.date_tirage || giveaway.end_date) {
+        // MySQL renvoie la date en UTC, on doit la convertir en heure locale pour l'input datetime-local
         const endDate = new Date(giveaway.date_tirage || giveaway.end_date);
-        document.getElementById('edit-giveaway-end-date').value = endDate.toISOString().slice(0, 16);
+        // Convertir UTC vers heure locale pour l'affichage
+        const year = endDate.getFullYear();
+        const month = String(endDate.getMonth() + 1).padStart(2, '0');
+        const day = String(endDate.getDate()).padStart(2, '0');
+        const hours = String(endDate.getHours()).padStart(2, '0');
+        const minutes = String(endDate.getMinutes()).padStart(2, '0');
+        document.getElementById('edit-giveaway-end-date').value = `${year}-${month}-${day}T${hours}:${minutes}`;
     }
 
     openModal('edit-giveaway-modal');
@@ -359,11 +366,20 @@ async function handleCreateGiveaway(e) {
     e.preventDefault();
 
     const formData = new FormData(e.target);
+    
+    // Convertir la date locale en UTC pour MySQL
+    let endDate = formData.get('end_date');
+    if (endDate) {
+        // datetime-local renvoie "YYYY-MM-DDTHH:MM", on le convertit en ISO UTC
+        const localDate = new Date(endDate);
+        endDate = localDate.toISOString().slice(0, 19).replace('T', ' ');
+    }
+    
     const giveawayData = {
         title: formData.get('title'),
         reward: formData.get('reward'),
         description: formData.get('description'),
-        end_date: formData.get('end_date'),
+        end_date: endDate,
         thumbnail: formData.get('thumbnail'),
         min_follows: parseInt(formData.get('min_follows')) || 0,
         min_messages: parseInt(formData.get('min_messages')) || 0
@@ -396,11 +412,20 @@ async function handleEditGiveaway(e) {
 
     const formData = new FormData(e.target);
     const giveawayId = formData.get('id');
+    
+    // Convertir la date locale en UTC pour MySQL
+    let endDate = formData.get('end_date');
+    if (endDate) {
+        // datetime-local renvoie "YYYY-MM-DDTHH:MM", on le convertit en ISO UTC
+        const localDate = new Date(endDate);
+        endDate = localDate.toISOString().slice(0, 19).replace('T', ' ');
+    }
+    
     const giveawayData = {
         title: formData.get('title'),
         reward: formData.get('reward'),
         description: formData.get('description'),
-        end_date: formData.get('end_date'),
+        end_date: endDate,
         thumbnail: formData.get('thumbnail'),
         min_follows: parseInt(formData.get('min_follows')) || 0,
         min_messages: parseInt(formData.get('min_messages')) || 0
