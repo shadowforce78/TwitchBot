@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Panel Admin - TwitchBot</title>
-    <meta name="description" content="Panel d'administration TwitchBot">
+    <title>Panel Admin - Kiwi Bot</title>
+    <meta name="description" content="Panel d'administration Kiwi TwitchBot">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="/assets/css/main.css">
-    <link rel="stylesheet" href="/assets/css/astro-admin.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/kiwi-theme.css">
+    <link rel="stylesheet" href="/assets/css/kiwi-admin.css">
 </head>
 <body>
     <!-- Navigation -->
     <nav class="navbar">
         <div class="navbar-left">
             <div class="logo">
-                <h2>🤖 TwitchBot Admin</h2>
+                <h2>Kiwi Panel</h2>
             </div>
         </div>
         
@@ -30,7 +30,7 @@
             <div class="user-info">
                 <img id="user-avatar" class="user-avatar" src="" alt="Avatar">
                 <span id="user-name">Chargement...</span>
-                <span class="admin-badge">👑 Admin</span>
+                <span class="admin-badge">Admin</span>
             </div>
             <button class="btn btn-outline" onclick="logout()">
                 🚪 Déconnexion
@@ -42,7 +42,7 @@
         <!-- Admin Header -->
         <div class="admin-header">
             <h1 class="page-title">🎁 Gestion des Giveaways</h1>
-            <p class="page-subtitle">Créez et gérez vos concours facilement</p>
+            <p class="page-subtitle">Créez et gérez vos concours facilement pour la communauté de Kiwi</p>
         </div>
 
 
@@ -75,13 +75,13 @@
     <!-- Footer -->
     <footer class="footer">
         <div class="footer-content">
-            <p>&copy; 2025 TwitchBot Panel - Créé avec ❤️</p>
+            <p>&copy; 2025 Kiwi Bot Panel | Developed with ❤️ by <a href="https://github.com/shadowforce78" target="_blank" style="color: var(--primary); font-weight: 600; text-decoration: none;">SaumonDeLuxe</a></p>
             <div class="social-links">
-                <a href="#" class="social-link">
-                    <img src="/github-icon.svg" alt="GitHub">
+                <a href="https://twitch.tv/kiwitfb" target="_blank" class="social-link" title="Twitch de Kiwi">
+                    <img src="/assets/svg/twitch-svgrepo-com.svg" alt="Twitch" style="width: 24px; height: 24px;">
                 </a>
-                <a href="#" class="social-link">
-                    <img src="/twitch-icon.svg" alt="Twitch">
+                <a href="https://github.com/shadowforce78" target="_blank" class="social-link" title="GitHub du développeur">
+                    <img src="/assets/svg/github-svgrepo-com.svg" alt="GitHub" style="width: 24px; height: 24px;">
                 </a>
             </div>
         </div>

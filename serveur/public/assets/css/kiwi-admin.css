@@ -1,0 +1,582 @@
+/* ============================================
+   KIWI ADMIN PANEL - Specific Styles
+   ============================================ */
+
+.admin-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    animation: fadeInUp 0.6s ease;
+}
+
+.page-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    position: relative;
+    display: inline-block;
+}
+
+.page-title::after {
+    content: '';
+    position: absolute;
+    bottom: -10px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 60px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius: 2px;
+}
+
+.page-subtitle {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    margin-top: 1.5rem;
+}
+
+/* ============================================
+   GIVEAWAY MANAGEMENT
+   ============================================ */
+
+.giveaways-management {
+    margin-bottom: 3rem;
+}
+
+.admin-card {
+    background: var(--surface);
+    border-radius: var(--radius-xl);
+    overflow: hidden;
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-light);
+    transition: all var(--transition-base);
+}
+
+.admin-card:hover {
+    box-shadow: var(--shadow-lg);
+}
+
+.admin-card .card-header {
+    background: linear-gradient(135deg, rgba(0, 217, 163, 0.05), rgba(108, 92, 231, 0.05));
+    padding: 2rem;
+    border-bottom: 1px solid var(--border-light);
+}
+
+.admin-card .card-header h3 {
+    font-size: 1.75rem;
+    font-weight: 700;
+}
+
+.admin-card > p {
+    padding: 0 2rem;
+    margin: 1.5rem 0;
+    color: var(--text-secondary);
+}
+
+/* ============================================
+   GIVEAWAY LIST
+   ============================================ */
+
+.giveaway-list {
+    padding: 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.giveaway-item {
+    display: flex;
+    align-items: center;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    background: var(--bg-tertiary);
+    border: 2px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    transition: all var(--transition-base);
+    animation: slideIn 0.5s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-50px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.giveaway-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: linear-gradient(180deg, var(--primary), var(--accent));
+    opacity: 0;
+    transition: opacity var(--transition-base);
+}
+
+.giveaway-item:hover {
+    background: var(--surface);
+    border-color: var(--primary);
+    transform: translateX(5px);
+    box-shadow: var(--shadow-md);
+}
+
+.giveaway-item:hover::before {
+    opacity: 1;
+}
+
+.giveaway-icon {
+    font-size: 3rem;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(0, 217, 163, 0.1), rgba(108, 92, 231, 0.1));
+    border-radius: var(--radius-lg);
+    flex-shrink: 0;
+    animation: rotate 3s linear infinite;
+}
+
+@keyframes rotate {
+    0%, 100% {
+        transform: rotate(0deg);
+    }
+    50% {
+        transform: rotate(5deg);
+    }
+}
+
+.giveaway-thumbnail {
+    width: 80px;
+    height: 80px;
+    flex-shrink: 0;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    box-shadow: var(--shadow-sm);
+}
+
+.giveaway-thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: transform var(--transition-slow);
+}
+
+.giveaway-item:hover .giveaway-thumbnail img {
+    transform: scale(1.1);
+}
+
+.giveaway-info {
+    flex-grow: 1;
+    min-width: 0;
+}
+
+.giveaway-info h4 {
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.giveaway-info p {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+}
+
+.giveaway-meta {
+    display: flex;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+}
+
+.giveaway-meta span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
+    font-size: 0.875rem;
+    color: var(--text-tertiary);
+    padding: 0.25rem 0.75rem;
+    background: var(--bg-secondary);
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-light);
+}
+
+.giveaway-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-end;
+    flex-shrink: 0;
+}
+
+.giveaway-actions .status {
+    margin-bottom: 0.5rem;
+}
+
+.giveaway-actions button {
+    min-width: 140px;
+}
+
+/* ============================================
+   OVERVIEW STATS
+   ============================================ */
+
+.overview-section {
+    margin-bottom: 3rem;
+}
+
+.overview-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1.5rem;
+}
+
+.overview-card {
+    background: var(--surface);
+    border: 2px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    text-align: center;
+    transition: all var(--transition-base);
+    position: relative;
+    overflow: hidden;
+}
+
+.overview-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform var(--transition-slow);
+}
+
+.overview-card:hover::before {
+    transform: scaleX(1);
+}
+
+.overview-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.overview-card h4 {
+    font-size: 0.875rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-tertiary);
+    margin-bottom: 1rem;
+}
+
+.overview-card .stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 0.5rem;
+    line-height: 1;
+}
+
+.overview-card .stat-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    filter: grayscale(0.5);
+    transition: filter var(--transition-base);
+}
+
+.overview-card:hover .stat-icon {
+    filter: grayscale(0);
+    animation: bounce 0.6s ease;
+}
+
+/* ============================================
+   BOT STATUS
+   ============================================ */
+
+.status-section {
+    margin-bottom: 3rem;
+}
+
+.status-cards {
+    display: grid;
+    gap: 1.5rem;
+}
+
+.status-card {
+    background: var(--surface);
+    border: 2px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    padding: 2rem;
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    transition: all var(--transition-base);
+}
+
+.status-card:hover {
+    border-color: var(--primary);
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-3px);
+}
+
+.status-icon {
+    font-size: 3.5rem;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, rgba(0, 217, 163, 0.1), rgba(108, 92, 231, 0.1));
+    border-radius: var(--radius-lg);
+    flex-shrink: 0;
+}
+
+.status-info {
+    flex-grow: 1;
+}
+
+.status-info h3 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.status-info p {
+    color: var(--text-secondary);
+    margin: 0.5rem 0;
+    font-size: 0.95rem;
+}
+
+.status-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+}
+
+/* ============================================
+   ACTIVITY FEED
+   ============================================ */
+
+.activity-section {
+    margin-bottom: 3rem;
+}
+
+.activity-feed {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.activity-item-small {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 1rem;
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-md);
+    border-left: 3px solid var(--primary);
+    transition: all var(--transition-base);
+}
+
+.activity-item-small:hover {
+    background: var(--surface);
+    transform: translateX(5px);
+    box-shadow: var(--shadow-sm);
+}
+
+.activity-user {
+    font-weight: 600;
+    color: var(--text-primary);
+    min-width: 120px;
+}
+
+.activity-command {
+    color: var(--primary);
+    font-family: 'Courier New', monospace;
+    font-weight: 600;
+    flex-grow: 1;
+}
+
+.activity-time {
+    color: var(--text-tertiary);
+    font-size: 0.875rem;
+}
+
+/* ============================================
+   WINNER MODAL SPECIAL
+   ============================================ */
+
+#winner-content {
+    padding: 2rem;
+}
+
+#winner-content .text-center {
+    animation: celebrate 0.8s ease;
+}
+
+@keyframes celebrate {
+    0%, 100% {
+        transform: scale(1);
+    }
+    25% {
+        transform: scale(1.05) rotate(-2deg);
+    }
+    75% {
+        transform: scale(1.05) rotate(2deg);
+    }
+}
+
+#winner-content h3 {
+    font-size: 2rem;
+    font-weight: 800;
+    margin: 1rem 0;
+    background: linear-gradient(135deg, var(--primary), var(--accent));
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+#winner-content p {
+    font-size: 1.125rem;
+    line-height: 1.8;
+    color: var(--text-secondary);
+}
+
+#winner-content strong {
+    color: var(--primary);
+    font-size: 1.5rem;
+    display: block;
+    margin: 1rem 0;
+}
+
+/* ============================================
+   QUICK ACTIONS GRID
+   ============================================ */
+
+.quick-actions {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.quick-action-btn {
+    padding: 1.5rem;
+    background: var(--surface);
+    border: 2px solid var(--border-light);
+    border-radius: var(--radius-lg);
+    text-align: center;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    text-decoration: none;
+    color: var(--text-primary);
+}
+
+.quick-action-btn:hover {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: white;
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-lg);
+}
+
+.quick-action-btn .icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+    display: block;
+}
+
+.quick-action-btn .label {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+/* ============================================
+   LOADING STATES
+   ============================================ */
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(0, 217, 163, 0.2);
+    border-top-color: var(--primary);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ============================================
+   RESPONSIVE ADMIN
+   ============================================ */
+
+@media (max-width: 968px) {
+    .giveaway-item {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .giveaway-actions {
+        width: 100%;
+        align-items: center;
+    }
+    
+    .giveaway-actions button {
+        width: 100%;
+    }
+    
+    .status-card {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .status-actions {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 768px) {
+    .page-title {
+        font-size: 2rem;
+    }
+    
+    .overview-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .giveaway-meta {
+        flex-direction: column;
+        align-items: center;
+    }
+}
