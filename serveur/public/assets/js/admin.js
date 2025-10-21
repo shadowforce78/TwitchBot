@@ -617,6 +617,129 @@ function closeModal(modalId) {
     }
 }
 
+// ==== BOT COMMANDS MANAGEMENT ====
+let commands = [];
+
+async function loadCommands() {
+    try {
+        const response = await fetch('/api/commands');
+        if (response.ok) {
+            commands = await response.json();
+            displayCommands();
+        } else {
+            showNotification('Erreur lors du chargement des commandes', 'error');
+        }
+    } catch (error) {
+        console.error('Erreur chargement commandes:', error);
+        showNotification('Erreur de connexion', 'error');
+    }
+}
+
+function displayCommands() {
+    const container = document.getElementById('commands-list');
+    
+    if (!commands || commands.length === 0) {
+        container.innerHTML = '<p class="text-center text-secondary">Aucune commande disponible</p>';
+        return;
+    }
+    
+    container.innerHTML = `
+        <div class="commands-grid">
+            ${commands.map(cmd => `
+                <div class="command-card ${!cmd.enabled ? 'disabled' : ''}">
+                    <div class="command-header">
+                        <div class="command-info">
+                            <span class="command-name">!${escapeHtml(cmd.name)}</span>
+                            <span class="command-type ${cmd.type || 'basic'}">${getCommandTypeLabel(cmd.type)}</span>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" 
+                                ${cmd.enabled ? 'checked' : ''} 
+                                onchange="toggleCommand('${escapeHtml(cmd.name)}')"
+                                ${cmd.name === 'command' ? 'disabled' : ''}>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <p class="command-description">${escapeHtml(cmd.description || 'Aucune description')}</p>
+                    ${cmd.content ? `
+                        <div class="command-content">
+                            <small>Réponse : </small>
+                            <code>${escapeHtml(cmd.content.substring(0, 100))}${cmd.content.length > 100 ? '...' : ''}</code>
+                        </div>
+                    ` : ''}
+                    <div class="command-footer">
+                        <span class="command-status ${cmd.enabled ? 'active' : 'inactive'}">
+                            ${cmd.enabled ? '✓ Active' : '✕ Désactivée'}
+                        </span>
+                        ${cmd.name === 'command' ? '<small style="color: var(--warning);">⚠️ Protégée</small>' : ''}
+                    </div>
+                </div>
+            `).join('')}
+        </div>
+    `;
+}
+
+function getCommandTypeLabel(type) {
+    const types = {
+        'basic': '📝 Basique',
+        'interactive': '🎮 Interactive',
+        'moderation': '🛡️ Modération',
+        'info': 'ℹ️ Info',
+        'fun': '🎉 Fun',
+        'utility': '🔧 Utilitaire'
+    };
+    return types[type] || '📝 Basique';
+}
+
+async function toggleCommand(commandName) {
+    try {
+        const response = await fetch(`/api/commands/${commandName}/toggle`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            // Mettre à jour l'état local
+            const cmd = commands.find(c => c.name === commandName);
+            if (cmd) {
+                cmd.enabled = data.enabled;
+            }
+            
+            showNotification(
+                `Commande !${commandName} ${data.enabled ? 'activée' : 'désactivée'}`,
+                data.enabled ? 'success' : 'info'
+            );
+            
+            // Rafraîchir l'affichage
+            displayCommands();
+        } else {
+            showNotification(data.message || 'Erreur lors du changement d\'état', 'error');
+            // Recharger les commandes pour avoir l'état correct
+            await loadCommands();
+        }
+    } catch (error) {
+        console.error('Erreur toggle command:', error);
+        showNotification('Erreur de connexion', 'error');
+        await loadCommands();
+    }
+}
+
+async function refreshCommands() {
+    showNotification('Actualisation des commandes...', 'info');
+    await loadCommands();
+}
+
+// Ajouter le chargement des commandes à l'initialisation
+const originalLoadAllData = loadAllData;
+loadAllData = async function() {
+    await Promise.all([
+        originalLoadAllData(),
+        loadCommands()
+    ]);
+};
+
 // Close modal when clicking outside
 document.addEventListener('click', function(e) {
     if (e.target.classList.contains('modal')) {

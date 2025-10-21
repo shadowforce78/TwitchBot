@@ -40,13 +40,26 @@
     <main>
         <!-- Admin Header -->
         <div class="admin-header">
-            <h1 class="page-title">🎁 Gestion des Giveaways</h1>
-            <p class="page-subtitle">Créez et gérez vos concours facilement pour la communauté de Kiwi</p>
+            <h1 class="page-title">⚙️ Panel Administration</h1>
+            <p class="page-subtitle">Gérez votre bot Twitch et vos giveaways en temps réel</p>
         </div>
 
+        <!-- Bot Commands Management -->
+        <section class="commands-management">
+            <div class="card admin-card">
+                <div class="card-header">
+                    <h3>🤖 Gestion des Commandes du Bot</h3>
+                    <button class="btn btn-outline btn-sm" onclick="refreshCommands()">
+                        🔄 Actualiser
+                    </button>
+                </div>
+                <p>Activez ou désactivez les commandes du bot en temps réel.</p>
 
-
-
+                <div class="commands-list" id="commands-list">
+                    <p class="text-center text-secondary">Chargement des commandes...</p>
+                </div>
+            </div>
+        </section>
 
         <!-- Giveaways Management -->
         <section class="giveaways-management">
