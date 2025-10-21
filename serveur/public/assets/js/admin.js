@@ -671,7 +671,14 @@ function displayCommands() {
                         <span class="command-status ${cmd.enabled ? 'active' : 'inactive'}">
                             ${cmd.enabled ? '✓ Active' : '✕ Désactivée'}
                         </span>
-                        ${cmd.name === 'command' ? '<small style="color: var(--warning);">⚠️ Protégée</small>' : ''}
+                        <div class="command-actions">
+                            ${cmd.type === 'basic' && cmd.name !== 'command' ? `
+                                <button class="btn btn-outline btn-sm" onclick="editCommand('${escapeHtml(cmd.name)}')">
+                                    ✏️ Modifier
+                                </button>
+                            ` : ''}
+                            ${cmd.name === 'command' ? '<small style="color: var(--warning);">⚠️ Protégée</small>' : ''}
+                        </div>
                     </div>
                 </div>
             `).join('')}
@@ -729,6 +736,68 @@ async function toggleCommand(commandName) {
 async function refreshCommands() {
     showNotification('Actualisation des commandes...', 'info');
     await loadCommands();
+}
+
+function editCommand(commandName) {
+    const cmd = commands.find(c => c.name === commandName);
+    if (!cmd) {
+        showNotification('Commande introuvable', 'error');
+        return;
+    }
+    
+    if (cmd.type !== 'basic') {
+        showNotification('Seules les commandes basiques peuvent être modifiées', 'warning');
+        return;
+    }
+    
+    // Remplir le formulaire
+    document.getElementById('edit-command-name').value = cmd.name;
+    document.getElementById('edit-command-content').value = cmd.content || '';
+    document.getElementById('edit-command-description-display').textContent = cmd.description || 'Aucune description';
+    
+    // Ouvrir la modale
+    openModal('edit-command-modal');
+}
+
+async function saveCommandContent(event) {
+    event.preventDefault();
+    
+    const commandName = document.getElementById('edit-command-name').value;
+    const content = document.getElementById('edit-command-content').value.trim();
+    
+    if (!content) {
+        showNotification('Le contenu ne peut pas être vide', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/commands/${commandName}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ content })
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification(`Commande !${commandName} mise à jour avec succès`, 'success');
+            
+            // Mettre à jour localement
+            const cmd = commands.find(c => c.name === commandName);
+            if (cmd) {
+                cmd.content = data.content;
+            }
+            
+            // Fermer la modale et rafraîchir
+            closeModal('edit-command-modal');
+            displayCommands();
+        } else {
+            showNotification(data.message || 'Erreur lors de la mise à jour', 'error');
+        }
+    } catch (error) {
+        console.error('Erreur save command:', error);
+        showNotification('Erreur de connexion', 'error');
+    }
 }
 
 // Ajouter le chargement des commandes à l'initialisation

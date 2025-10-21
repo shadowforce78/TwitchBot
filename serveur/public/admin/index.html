@@ -202,6 +202,44 @@
         </div>
     </div>
 
+    <!-- Edit Command Modal -->
+    <div id="edit-command-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">✏️ Modifier la Commande</h3>
+                <button class="modal-close" onclick="closeModal('edit-command-modal')">&times;</button>
+            </div>
+            <form id="edit-command-form" onsubmit="saveCommandContent(event)">
+                <input type="hidden" id="edit-command-name">
+                
+                <div class="form-group">
+                    <label class="form-label">Description</label>
+                    <p id="edit-command-description-display" style="color: var(--text-secondary); font-style: italic; margin: 0.5rem 0;"></p>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-command-content">Contenu de la réponse</label>
+                    <textarea 
+                        id="edit-command-content" 
+                        name="content" 
+                        class="form-textarea" 
+                        rows="6"
+                        required 
+                        placeholder="Entrez le texte de réponse de la commande..."></textarea>
+                    <small class="form-hint">
+                        💡 Variables disponibles : {user} pour le nom de l'utilisateur
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        💾 Sauvegarder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- Notification Container -->
     <div id="notification-container"></div>
 

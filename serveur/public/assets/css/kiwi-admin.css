@@ -679,6 +679,8 @@
     margin-top: 1rem;
     padding-top: 0.75rem;
     border-top: 1px solid var(--border-light);
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .command-status {
@@ -692,6 +694,12 @@
 
 .command-status.inactive {
     color: var(--text-tertiary);
+}
+
+.command-actions {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
 }
 
 /* Toggle Switch */
