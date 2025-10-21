@@ -260,6 +260,13 @@
 .giveaway-actions {
   display: flex;
   gap: var(--space-sm);
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.giveaway-actions .btn-sm {
+  flex: 0 0 auto;
+  font-size: 0.875rem;
 }
 
 .participate-btn {

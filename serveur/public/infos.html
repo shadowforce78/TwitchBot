@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Informations - FAQ</title>
+    <meta name="description" content="Toutes les informations sur le fonctionnement des giveaways">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/assets/css/kiwi-theme.css">
+    <link rel="stylesheet" href="/assets/css/kiwi-homepage.css">
+    <link rel="stylesheet" href="/assets/css/infos.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="navbar-left">
+            <div class="logo">
+                <img src="/assets/svg/twitch-svgrepo-com.svg" alt="Twitch" class="logo-icon">
+                <img src="/img/logo_gm_white.png" alt="GM Logo" class="logo-gm">
+            </div>
+        </div>
+
+        <div class="navbar-center">
+            <a href="/" class="nav-link">🏠 Accueil</a>
+            <a href="/giveaways" class="nav-link">🎁 Giveaways</a>
+            <a href="/infos" class="nav-link active">ℹ️ + d'infos</a>
+            <a href="/admin" class="nav-link" id="admin-link" style="display: none;">⚙️ Panel Admin</a>
+        </div>
+
+        <div class="navbar-right">
+            <div class="user-info" id="user-info" style="display: none;">
+                <img id="user-avatar" class="user-avatar" src="" alt="Avatar">
+                <span id="user-name"></span>
+                <button class="btn btn-outline btn-sm" onclick="handleLogout()">Se déconnecter</button>
+            </div>
+            <button class="btn btn-primary" id="auth-btn" onclick="handleAuth()">
+                Se connecter
+            </button>
+        </div>
+    </nav>
+
+    <main>
+        <section class="section-faq">
+            <div class="container">
+                <h1 class="section-title">ℹ️ Foire Aux Questions</h1>
+                <p class="subtitle">Toutes les informations sur le fonctionnement des giveaways</p>
+
+                <div class="faq-container">
+                    <!-- Déroulement et participation -->
+                    <div class="faq-category">
+                        <h2>🎯 Déroulement et Comment Participer</h2>
+                        
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFaq(this)">
+                                <span>Comment participer à un giveaway ?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Pour participer à un giveaway, il vous suffit de :</p>
+                                <ol>
+                                    <li>Vous connecter avec votre compte Twitch</li>
+                                    <li>Consulter les giveaways en cours sur la page dédiée</li>
+                                    <li>Cliquer sur le bouton "Participer" du giveaway de votre choix</li>
+                                    <li>Confirmer votre participation</li>
+                                </ol>
+                                <p>Votre participation est immédiatement enregistrée et vous recevrez une notification si vous êtes tiré au sort !</p>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFaq(this)">
+                                <span>Quelles sont les conditions pour participer ?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Les conditions de participation peuvent varier selon les giveaways, mais généralement :</p>
+                                <ul>
+                                    <li>Vous devez être connecté avec un compte Twitch valide</li>
+                                    <li>Vous devez respecter les règles de la communauté</li>
+                                    <li>Certains giveaways peuvent avoir des conditions spécifiques (nombre de followers minimum, messages dans le chat, etc.)</li>
+                                </ul>
+                                <p>Ces conditions sont toujours clairement indiquées sur la page de chaque giveaway.</p>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFaq(this)">
+                                <span>Combien de giveaways puis-je rejoindre ?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Vous pouvez participer à <strong>tous les giveaways en cours</strong> sans limite ! Chaque giveaway est indépendant, donc multiplier vos participations augmente vos chances de gagner.</p>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFaq(this)">
+                                <span>Quand sont annoncés les gagnants ?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Chaque giveaway a une date et heure de tirage précises. Le gagnant est automatiquement tiré au sort à cette date et notifié immédiatement via :</p>
+                                <ul>
+                                    <li>Discord (si configuré)</li>
+                                    <li>Sur le site web</li>
+                                    <li>Le profil du gagnant sur la page du giveaway</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Tirage au sort -->
+                    <div class="faq-category">
+                        <h2>🎲 Comment on tire au sort</h2>
+                        
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFaq(this)">
+                                <span>Le tirage est-il vraiment aléatoire ?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-answer">
+                                <p><strong>Oui, absolument !</strong> Notre système utilise un générateur de nombres pseudo-aléatoires certifié pour garantir l'équité du tirage.</p>
+                                <p>Chaque participant a exactement les <strong>mêmes chances de gagner</strong>, peu importe son ancienneté ou son activité.</p>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFaq(this)">
+                                <span>Comment fonctionne le système de tirage automatique ?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Notre système de tirage automatique fonctionne ainsi :</p>
+                                <ol>
+                                    <li>Le giveaway reste ouvert jusqu'à la date/heure de fin programmée</li>
+                                    <li>À l'heure exacte, le système vérifie tous les participants</li>
+                                    <li>Un participant est sélectionné aléatoirement parmi la liste</li>
+                                    <li>Le giveaway est automatiquement fermé</li>
+                                    <li>Le gagnant est notifié et son nom est affiché publiquement</li>
+                                </ol>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFaq(this)">
+                                <span>Peut-il y avoir plusieurs gagnants ?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Actuellement, chaque giveaway désigne <strong>un seul gagnant</strong>. Cependant, rien ne vous empêche de participer à plusieurs giveaways simultanément pour augmenter vos chances !</p>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFaq(this)">
+                                <span>Que se passe-t-il en cas de reroll ?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Un "reroll" peut avoir lieu si :</p>
+                                <ul>
+                                    <li>Le gagnant ne répond pas dans les délais impartis</li>
+                                    <li>Le gagnant ne remplit pas les conditions</li>
+                                    <li>Le gagnant refuse le prix</li>
+                                </ul>
+                                <p>Dans ce cas, un nouveau tirage est effectué parmi les participants restants (le précédent gagnant est exclu). Le nouveau gagnant est notifié de la même manière.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Protection des données -->
+                    <div class="faq-category">
+                        <h2>🔒 Utilisation et Protection de Données</h2>
+                        
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFaq(this)">
+                                <span>Quelles données collectez-vous ?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Nous collectons uniquement les données nécessaires au fonctionnement du système de giveaways :</p>
+                                <ul>
+                                    <li><strong>ID Twitch</strong> : Pour identifier votre compte de manière unique</li>
+                                    <li><strong>Nom d'utilisateur Twitch</strong> : Pour afficher votre participation</li>
+                                    <li><strong>Photo de profil</strong> : Pour l'affichage sur le site</li>
+                                    <li><strong>Date de participation</strong> : Pour historiser vos participations</li>
+                                </ul>
+                                <p>Nous ne collectons <strong>AUCUNE</strong> donnée personnelle sensible (email, adresse, numéro de téléphone, etc.).</p>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFaq(this)">
+                                <span>Comment sont protégées mes données ?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Vos données sont protégées par :</p>
+                                <ul>
+                                    <li><strong>Connexion HTTPS sécurisée</strong> : Toutes les communications sont chiffrées</li>
+                                    <li><strong>Base de données sécurisée</strong> : Accès restreint et protégé par mot de passe</li>
+                                    <li><strong>OAuth Twitch</strong> : Nous n'avons jamais accès à votre mot de passe Twitch</li>
+                                    <li><strong>Pas de revente</strong> : Vos données ne sont jamais partagées ou vendues à des tiers</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFaq(this)">
+                                <span>Puis-je supprimer mes données ?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Oui ! Conformément au RGPD, vous avez le droit de :</p>
+                                <ul>
+                                    <li><strong>Consulter</strong> vos données enregistrées</li>
+                                    <li><strong>Rectifier</strong> vos informations si elles sont incorrectes</li>
+                                    <li><strong>Supprimer</strong> vos données de notre base</li>
+                                </ul>
+                                <p>Pour exercer ces droits, contactez-nous via le formulaire de suggestions ou sur nos réseaux sociaux.</p>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFaq(this)">
+                                <span>Utilisez-vous des cookies ?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Nous utilisons des cookies uniquement pour :</p>
+                                <ul>
+                                    <li><strong>Session utilisateur</strong> : Pour maintenir votre connexion active</li>
+                                    <li><strong>Fonctionnalités du site</strong> : Pour améliorer votre expérience</li>
+                                </ul>
+                                <p>Nous n'utilisons <strong>aucun cookie de tracking publicitaire</strong> ou de suivi tiers.</p>
+                            </div>
+                        </div>
+
+                        <div class="faq-item">
+                            <button class="faq-question" onclick="toggleFaq(this)">
+                                <span>Que faites-vous avec mes données après un giveaway ?</span>
+                                <span class="faq-icon">+</span>
+                            </button>
+                            <div class="faq-answer">
+                                <p>Après un giveaway :</p>
+                                <ul>
+                                    <li>Les données de participation sont conservées pour l'historique</li>
+                                    <li>Votre nom peut apparaître dans la liste des participants passés</li>
+                                    <li>Si vous gagnez, votre pseudo sera affiché publiquement (c'est normal pour un giveaway !)</li>
+                                </ul>
+                                <p>Aucune autre utilisation n'est faite de vos données. Elles ne servent qu'au fonctionnement du système de giveaways.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-section">
+                <h3>Réseaux sociaux</h3>
+                <p>Découvrez en plus sur moi en me suivant sur mes différents réseaux sociaux !</p>
+                <div class="social-links">
+                    <a href="https://portfolio.gmocellin.com" target="_blank" class="social-link" title="Site Web">
+                        <span>🌐</span> Site Web
+                    </a>
+                    <a href="https://www.instagram.com/kiwi_tfb" target="_blank" class="social-link" title="Instagram">
+                        <span>📷</span> Instagram
+                    </a>
+                    <a href="https://www.linkedin.com/in/gmocellin" target="_blank" class="social-link" title="LinkedIn">
+                        <span>💼</span> LinkedIn
+                    </a>
+                    <a href="https://github.com/KiwimanTFB" target="_blank" class="social-link" title="GitHub">
+                        <img src="/assets/svg/github-svgrepo-com.svg" alt="GitHub" style="width: 20px; height: 20px; filter: brightness(0) invert(1);"> GitHub
+                    </a>
+                </div>
+            </div>
+            
+            <div class="footer-section">
+                <h3>💬 Suggestions</h3>
+                <p>Une idée de récompense ? Partagez-la avec nous !</p>
+                <form class="suggestion-form" onsubmit="submitSuggestion(event)">
+                    <textarea 
+                        id="suggestion-text" 
+                        placeholder="Votre suggestion de récompense..." 
+                        rows="3"
+                        maxlength="500"
+                        required
+                    ></textarea>
+                    <button type="submit" class="btn btn-primary btn-sm">Envoyer</button>
+                </form>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>&copy; 2025 Giveaway Platform | Developed with ❤️ by <a href="https://github.com/shadowforce78" target="_blank">SaumonDeLuxe</a></p>
+        </div>
+    </footer>
+
+    <!-- Notification Container -->
+    <div id="notification-container"></div>
+
+    <script src="/assets/js/common.js"></script>
+    <script src="/assets/js/infos.js"></script>
+</body>
+</html>

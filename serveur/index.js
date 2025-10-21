@@ -37,12 +37,23 @@ app.use(session({
 
 // Static - Panel Infrastructure
 app.use('/assets', express.static(join(__dirname, 'public', 'assets')));
+app.use('/img', express.static(join(__dirname, 'public', 'assets', 'img')));
 app.use('/admin', express.static(join(__dirname, 'public', 'admin')));
 
 // Index - Page d'accueil
 app.get('/', (req, res) => {
 	// Tous les utilisateurs (connectés ou non) -> Page d'accueil
 	res.sendFile(join(__dirname, 'public', 'index.html'));
+});
+
+// Page Giveaways
+app.get('/giveaways', (req, res) => {
+	res.sendFile(join(__dirname, 'public', 'giveaways.html'));
+});
+
+// Page Infos
+app.get('/infos', (req, res) => {
+	res.sendFile(join(__dirname, 'public', 'infos.html'));
 });
 
 // Login route -> redirection OAuth Twitch
@@ -904,7 +915,7 @@ app.post('/api/giveaways/:id/reroll-winner', requireAuth, requireAdmin, async (r
 
 		// Récupérer le giveaway actuel pour voir l'ancien gagnant
 		const giveaway = await db.getGiveawayById(parseInt(id));
-		
+
 		if (!giveaway) {
 			return res.status(404).json({ error: 'not_found', message: 'Giveaway introuvable' });
 		}
@@ -923,14 +934,14 @@ app.post('/api/giveaways/:id/reroll-winner', requireAuth, requireAdmin, async (r
 		}
 
 		// Filtrer l'ancien gagnant pour ne pas le retirer
-		const participants = oldWinnerId 
+		const participants = oldWinnerId
 			? allParticipants.filter(p => p.id_twitch !== oldWinnerId)
 			: allParticipants;
 
 		if (participants.length === 0) {
-			return res.status(400).json({ 
-				error: 'no_other_participants', 
-				message: 'Aucun autre participant disponible pour le reroll' 
+			return res.status(400).json({
+				error: 'no_other_participants',
+				message: 'Aucun autre participant disponible pour le reroll'
 			});
 		}
 
@@ -1017,7 +1028,7 @@ async function checkGiveawaysForAutoDraw() {
 	try {
 		const db = new DatabaseManager();
 		await db.init(); // S'assurer que la connexion est initialisée
-		
+
 		// Récupérer TOUS les giveaways actifs avec une date de tirage
 		// On va filtrer côté JavaScript pour éviter les problèmes de fuseau horaire
 		const giveaways = await db.query(`
@@ -1043,12 +1054,12 @@ async function checkGiveawaysForAutoDraw() {
 		for (const giveaway of giveawaysToProcess) {
 			console.log(`[Auto-Draw] Tirage automatique pour le giveaway #${giveaway.id}: ${giveaway.titre}`);
 			console.log(`[Auto-Draw] Date de tirage: ${giveaway.date_tirage}, Maintenant: ${now.toISOString()}`);
-			
+
 			// Récupérer les participants
 			const participants = await db.getGiveawayParticipants(giveaway.id);
-			
+
 			console.log(`[Auto-Draw] ${participants.length} participant(s) pour le giveaway #${giveaway.id}`);
-			
+
 			if (participants.length === 0) {
 				console.log(`[Auto-Draw] Aucun participant pour le giveaway #${giveaway.id}, fermeture sans gagnant`);
 				await db.closeGiveaway(giveaway.id);
@@ -1057,12 +1068,12 @@ async function checkGiveawaysForAutoDraw() {
 
 			// Sélectionner un gagnant aléatoire
 			const winner = participants[Math.floor(Math.random() * participants.length)];
-			
+
 			// Enregistrer le gagnant et fermer le giveaway
 			await db.setGiveawayWinner(giveaway.id, winner.id_twitch);
-			
+
 			console.log(`[Auto-Draw] Gagnant tiré au sort: ${winner.username} pour le giveaway #${giveaway.id}`);
-			
+
 			// Envoyer la notification Discord
 			await sendDiscordNotification(
 				{ username: winner.username, displayName: winner.username, id_twitch: winner.id_twitch },
@@ -1084,10 +1095,10 @@ function startAutoDrawCheck() {
 	if (autoDrawInterval) {
 		clearInterval(autoDrawInterval);
 	}
-	
+
 	// Vérifier immédiatement au démarrage
 	checkGiveawaysForAutoDraw();
-	
+
 	// Puis vérifier toutes les minutes
 	autoDrawInterval = setInterval(checkGiveawaysForAutoDraw, 60 * 1000);
 	console.log('[Auto-Draw] Système de tirage automatique démarré (vérification toutes les minutes)');
@@ -1183,7 +1194,7 @@ if (require.main === module) {
 	app.listen(PORT, () => {
 		console.log(`[serveur] Serveur web démarré sur ${BASE_URL}`);
 		console.log(`[oauth] Redirect URI attendu: ${OAUTH_REDIRECT}`);
-		
+
 		// Démarrer le système de tirage automatique
 		startAutoDrawCheck();
 	});
@@ -1193,7 +1204,7 @@ module.exports = {
 	start: () => app.listen(PORT, () => {
 		console.log(`[serveur] Serveur web démarré sur ${BASE_URL}`);
 		console.log(`[oauth] Redirect URI attendu: ${OAUTH_REDIRECT}`);
-		
+
 		// Démarrer le système de tirage automatique
 		startAutoDrawCheck();
 	})

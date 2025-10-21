@@ -3,9 +3,9 @@
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Giveaways - Kiwi Bot</title>
+        <title>Giveaways - Participez maintenant</title>
         <meta name="description"
-            content="Participez aux giveaways de la communauté Kiwi !">
+            content="Participez aux giveaways en cours et consultez l'historique">
         <link rel="preconnect" href="https://fonts.googleapis.com">
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
         <link
@@ -13,6 +13,7 @@
             rel="stylesheet">
         <link rel="stylesheet" href="/assets/css/kiwi-theme.css">
         <link rel="stylesheet" href="/assets/css/kiwi-homepage.css">
+        <link rel="stylesheet" href="/assets/css/giveaways.css">
     </head>
     <body>
         <!-- Navigation -->
@@ -27,8 +28,8 @@
             </div>
 
             <div class="navbar-center">
-                <a href="/" class="nav-link active">🏠 Accueil</a>
-                <a href="/giveaways" class="nav-link">🎁 Giveaways</a>
+                <a href="/" class="nav-link">🏠 Accueil</a>
+                <a href="/giveaways" class="nav-link active">🎁 Giveaways</a>
                 <a href="/infos" class="nav-link">ℹ️ + d'infos</a>
                 <a href="/admin" class="nav-link" id="admin-link"
                     style="display: none;">⚙️ Panel Admin</a>
@@ -49,110 +50,55 @@
         </nav>
 
         <main>
-            <!-- Hero Section -->
-            <section class="hero">
-                <div class="hero-content">
-                    <h1 class="hero-title">
-                        Bienvenue sur le site de Giveaways !
-                    </h1>
-                    <p class="hero-subtitle">
-                        Rejoignez notre communauté et participez à des concours
-                        passionnants pour gagner des récompenses exclusives.
-                        Chaque giveaway est une nouvelle opportunité de
-                        remporter des prix incroyables, alors n'attendez plus et
-                        tentez votre chance !
-                    </p>
-                    <a href="/giveaways" class="btn btn-primary btn-lg">
-                        🎁 Voir les Giveaways en cours
-                    </a>
-                </div>
-            </section>
-
-            <!-- Explications Section -->
-            <section class="section-info">
+            <!-- Giveaways en cours -->
+            <section class="section-active-giveaways">
                 <div class="container">
-                    <h2 class="section-title">Comment ça marche ?</h2>
-                    <div class="info-grid">
-                        <div class="info-card">
-                            <div class="info-icon">1️⃣</div>
-                            <h3>Connectez-vous</h3>
-                            <p>Connectez-vous avec votre compte Twitch pour
-                                participer aux giveaways</p>
-                        </div>
-                        <div class="info-card">
-                            <div class="info-icon">2️⃣</div>
-                            <h3>Participez</h3>
-                            <p>Cliquez sur "Participer" sur le giveaway de votre
-                                choix</p>
-                        </div>
-                        <div class="info-card">
-                            <div class="info-icon">3️⃣</div>
-                            <h3>Gagnez !</h3>
-                            <p>Le gagnant est tiré au sort de manière aléatoire
-                                et équitable à la fin du temps de manière
-                                automatique</p>
-                        </div>
+                    <h1 class="section-title">🎁 Giveaways en cours</h1>
+                    <div class="active-giveaways-grid" id="active-giveaways">
+                        <p class="text-center">Chargement des giveaways...</p>
+                    </div>
+
+                    <!-- Informations sur le tirage -->
+                    <div class="draw-info-box">
+                        <h3>🎲 Comment est tiré au sort le gagnant ?</h3>
+                        <p>Le tirage au sort est effectué de manière
+                            <strong>totalement aléatoire et équitable</strong>.
+                            Chaque participant a exactement les mêmes chances de
+                            gagner. Notre système utilise un générateur de
+                            nombres aléatoires certifié pour garantir
+                            l'impartialité du tirage.</p>
+                        <p>Une fois le giveaway terminé, le gagnant est
+                            sélectionné automatiquement et notifié
+                            instantanément via Discord et sur le site.</p>
                     </div>
                 </div>
             </section>
 
-            <!-- Derniers Giveaways Section -->
-            <section class="section-recent">
+            <!-- Box suggestions -->
+            <section class="section-suggestions-compact">
                 <div class="container">
-                    <h2 class="section-title">🏆 Derniers Giveaways</h2>
-                    <div class="recent-giveaways-grid" id="recent-giveaways">
-                        <p class="text-center">Chargement...</p>
-                    </div>
-                    <div class="text-center" style="margin-top: 2rem;">
-                        <a href="/giveaways#historique" class="btn btn-outline">
-                            Voir tout l'historique
-                        </a>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Suggestions Section -->
-            <section class="section-suggestions">
-                <div class="container">
-                    <h2 class="section-title">💡 Suggestions de récompenses</h2>
-                    <div class="carousel-container">
-                        <button class="carousel-btn prev"
-                            onclick="prevSlide()">&lt;</button>
-                        <div class="carousel">
-                            <div class="carousel-track" id="carousel-track">
-                                <div class="suggestion-card">
-                                    <div class="suggestion-icon">🎮</div>
-                                    <h3>Jeux vidéo</h3>
-                                    <p>Les derniers jeux à la mode</p>
-                                </div>
-                                <div class="suggestion-card">
-                                    <div class="suggestion-icon">💰</div>
-                                    <h3>Cartes cadeaux</h3>
-                                    <p>Steam, Amazon, PlayStation...</p>
-                                </div>
-                                <div class="suggestion-card">
-                                    <div class="suggestion-icon">🎧</div>
-                                    <h3>Accessoires Gaming</h3>
-                                    <p>Casques, souris, claviers...</p>
-                                </div>
-                                <div class="suggestion-card">
-                                    <div class="suggestion-icon">🎁</div>
-                                    <h3>Goodies</h3>
-                                    <p>Produits dérivés exclusifs</p>
-                                </div>
-                                <div class="suggestion-card">
-                                    <div class="suggestion-icon">💸</div>
-                                    <h3>Cash Prize</h3>
-                                    <p>Récompenses en argent</p>
-                                </div>
-                            </div>
+                    <div class="suggestions-box">
+                        <h3>💡 Idées de récompenses populaires</h3>
+                        <div class="suggestions-tags">
+                            <span class="tag">🎮 Jeux Steam</span>
+                            <span class="tag">💰 Cartes cadeaux</span>
+                            <span class="tag">🎧 Accessoires Gaming</span>
+                            <span class="tag">💸 Cash Prize</span>
+                            <span class="tag">🎁 Goodies exclusifs</span>
                         </div>
-                        <button class="carousel-btn next"
-                            onclick="nextSlide()">&gt;</button>
                     </div>
                 </div>
             </section>
 
+            <!-- Historique -->
+            <section class="section-history" id="historique">
+                <div class="container">
+                    <h2 class="section-title">📜 Historique des Giveaways</h2>
+                    <div class="history-grid" id="history-giveaways">
+                        <p class="text-center">Chargement de l'historique...</p>
+                    </div>
+                </div>
+            </section>
         </main>
 
         <!-- Footer -->
@@ -231,6 +177,6 @@
         <div id="notification-container"></div>
 
         <script src="/assets/js/common.js"></script>
-        <script src="/assets/js/homepage.js"></script>
+        <script src="/assets/js/giveaways.js"></script>
     </body>
 </html>

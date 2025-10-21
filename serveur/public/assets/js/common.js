@@ -10,14 +10,14 @@ async function checkAuth() {
         const response = await fetch('/api/me');
         const data = await response.json();
         
-        if (data.loggedIn) {
+        if (data.isAuthenticated) {
             currentUser = {
                 id: data.id,
                 login: data.login,
                 display_name: data.displayName,
-                profile_image_url: data.profileImage
+                profile_image_url: data.avatar || data.profileImage
             };
-            isAdmin = data.isAuthorized || data.isWhitelisted;
+            isAdmin = data.isAuthorized || data.isWhitelisted || data.isAdmin;
             
             // Update UI for connected user
             updateUserDisplay(true);
@@ -35,44 +35,72 @@ async function checkAuth() {
     }
 }
 
+// Handle authentication - redirect to login
+function handleAuth() {
+    window.location.href = '/login';
+}
+
 function updateUserDisplay(isConnected) {
+    // New navbar structure
+    const userInfo = document.getElementById('user-info');
+    const authBtn = document.getElementById('auth-btn');
+    const adminLink = document.getElementById('admin-link');
+    
+    // Old structure (for compatibility)
     const userConnected = document.getElementById('user-connected');
     const userNotConnected = document.getElementById('user-not-connected');
-    const adminBtn = document.getElementById('admin-btn');
     const userParticipationsLabel = document.getElementById('user-participations-label');
     
     if (isConnected && currentUser) {
-        // Show connected user interface
+        // New navbar structure
+        if (userInfo) {
+            userInfo.style.display = 'flex';
+            
+            // Update user info in navbar
+            const userAvatar = document.getElementById('user-avatar');
+            const userName = document.getElementById('user-name');
+            
+            if (userAvatar && currentUser.profile_image_url) {
+                userAvatar.src = currentUser.profile_image_url;
+            }
+            
+            if (userName) {
+                userName.textContent = currentUser.display_name || currentUser.login;
+            }
+        }
+        
+        if (authBtn) {
+            authBtn.style.display = 'none';
+        }
+        
+        // Show admin link if user is admin
+        if (adminLink && isAdmin) {
+            adminLink.style.display = 'inline-block';
+        }
+        
+        // Old structure compatibility
         if (userConnected) userConnected.style.display = 'flex';
         if (userNotConnected) userNotConnected.style.display = 'none';
-        
-        // Update user info
-        const userAvatar = document.getElementById('user-avatar');
-        const userName = document.getElementById('user-name');
-        
-        if (userAvatar && currentUser.profile_image_url) {
-            userAvatar.src = currentUser.profile_image_url;
-        }
-        
-        if (userName) {
-            userName.textContent = currentUser.display_name || currentUser.login;
-        }
-        
-        // Show admin button if user is admin
-        if (adminBtn && isAdmin) {
-            adminBtn.style.display = 'inline-flex';
-        }
-        
-        // Update stats label
         if (userParticipationsLabel) {
             userParticipationsLabel.textContent = 'Vos Participations';
         }
     } else {
-        // Show non-connected user interface
+        // New navbar structure
+        if (userInfo) {
+            userInfo.style.display = 'none';
+        }
+        
+        if (authBtn) {
+            authBtn.style.display = 'inline-block';
+        }
+        
+        if (adminLink) {
+            adminLink.style.display = 'none';
+        }
+        
+        // Old structure compatibility
         if (userConnected) userConnected.style.display = 'none';
         if (userNotConnected) userNotConnected.style.display = 'flex';
-        
-        // Update stats label for non-connected users
         if (userParticipationsLabel) {
             userParticipationsLabel.textContent = 'Connectez-vous';
         }
@@ -80,7 +108,19 @@ function updateUserDisplay(isConnected) {
 }
 
 function logout() {
+    // Mettre à jour l'UI immédiatement avant la redirection
+    currentUser = null;
+    isAdmin = false;
+    updateUserDisplay(false);
+    
+    // Rediriger vers la route de déconnexion
     window.location.href = '/logout';
+}
+
+// Alias for compatibility
+function handleLogout() {
+    showNotification('Déconnexion en cours...', 'info');
+    logout();
 }
 
 // ==== NOTIFICATIONS ====
@@ -375,5 +415,21 @@ window.TwitchBotPanel = {
     escapeHtml,
     getFromStorage,
     setToStorage,
-    removeFromStorage
+    removeFromStorage,
+    submitSuggestion
 };
+
+// ==== FORMULAIRE DE SUGGESTION ====
+async function submitSuggestion(event) {
+    event.preventDefault();
+    const textarea = document.getElementById('suggestion-text');
+    const suggestion = textarea.value.trim();
+    
+    if (!suggestion) {
+        showNotification('Veuillez entrer une suggestion', 'error');
+        return;
+    }
+    
+    showNotification('Merci pour votre suggestion ! 💡', 'success');
+    textarea.value = '';
+}
