@@ -545,7 +545,7 @@
     text-align: center;
     box-shadow: var(--shadow-sm);
     transition: all var(--transition-base);
-    border: 2px solid transparent;
+    border: 2px solid #2c323836;
 }
 
 .info-card:hover {
