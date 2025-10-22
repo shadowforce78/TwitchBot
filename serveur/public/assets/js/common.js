@@ -415,21 +415,5 @@ window.TwitchBotPanel = {
     escapeHtml,
     getFromStorage,
     setToStorage,
-    removeFromStorage,
-    submitSuggestion
+    removeFromStorage
 };
-
-// ==== FORMULAIRE DE SUGGESTION ====
-async function submitSuggestion(event) {
-    event.preventDefault();
-    const textarea = document.getElementById('suggestion-text');
-    const suggestion = textarea.value.trim();
-    
-    if (!suggestion) {
-        showNotification('Veuillez entrer une suggestion', 'error');
-        return;
-    }
-    
-    showNotification('Merci pour votre suggestion ! 💡', 'success');
-    textarea.value = '';
-}

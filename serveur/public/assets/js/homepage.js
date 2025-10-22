@@ -101,6 +101,47 @@ async function submitSuggestion(event) {
 
 // handleLogout() est défini dans common.js
 
+// Formulaire de contact
+async function submitContact(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const formData = new FormData(form);
+    
+    const contactData = {
+        name: formData.get('name'),
+        email: formData.get('email'),
+        subject: formData.get('subject') || 'Nouveau message de contact',
+        message: formData.get('message')
+    };
+    
+    // Validation
+    if (!contactData.name || !contactData.email || !contactData.message) {
+        showNotification('Veuillez remplir tous les champs obligatoires', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(contactData)
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification('Message envoyé avec succès ! Nous vous répondrons rapidement. 📧', 'success');
+            form.reset();
+        } else {
+            showNotification(data.message || 'Erreur lors de l\'envoi du message', 'error');
+        }
+    } catch (error) {
+        console.error('Erreur:', error);
+        showNotification('Erreur de connexion. Veuillez réessayer.', 'error');
+    }
+}
+
 // Initialisation
 document.addEventListener('DOMContentLoaded', () => {
     loadRecentGiveaways();

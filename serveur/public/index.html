@@ -122,7 +122,7 @@
             <!-- Suggestions Section -->
             <section class="section-suggestions">
                 <div class="container">
-                    <h2 class="section-title">💡 Suggestions de récompenses</h2>
+                    <h2 class="section-title"><span class="emoji-icon">💡</span> Suggestions de récompenses</h2>
                     <div class="carousel-container">
                         <button class="carousel-btn prev"
                             onclick="prevSlide()">&lt;</button>
@@ -157,6 +157,66 @@
                         </div>
                         <button class="carousel-btn next"
                             onclick="nextSlide()">&gt;</button>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Contact Section -->
+            <section class="section-contact">
+                <div class="container">
+                    <h2 class="section-title"><span class="emoji-icon">📧</span> Contactez-nous</h2>
+                    <p class="section-subtitle">Une question ? Une suggestion ? N'hésitez pas à nous contacter !</p>
+                    
+                    <div class="contact-container">
+                        <form class="contact-form" id="contact-form" onsubmit="submitContact(event)">
+                            <div class="form-row">
+                                <div class="form-group">
+                                    <label for="contact-name" class="form-label">Nom complet *</label>
+                                    <input 
+                                        type="text" 
+                                        id="contact-name" 
+                                        name="name"
+                                        class="form-input" 
+                                        placeholder="Votre nom"
+                                        required>
+                                </div>
+                                <div class="form-group">
+                                    <label for="contact-email" class="form-label">Email *</label>
+                                    <input 
+                                        type="email" 
+                                        id="contact-email" 
+                                        name="email"
+                                        class="form-input" 
+                                        placeholder="votre@email.com"
+                                        required>
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="contact-subject" class="form-label">Sujet</label>
+                                <input 
+                                    type="text" 
+                                    id="contact-subject" 
+                                    name="subject"
+                                    class="form-input" 
+                                    placeholder="Sujet de votre message">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="contact-message" class="form-label">Message *</label>
+                                <textarea 
+                                    id="contact-message" 
+                                    name="message"
+                                    class="form-textarea" 
+                                    placeholder="Votre message..."
+                                    rows="6"
+                                    required></textarea>
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <span class="emoji-icon">📨</span> Envoyer le message
+                            </button>
+                        </form>
                     </div>
                 </div>
             </section>
@@ -198,22 +258,6 @@
                                 class="social-icon-svg">
                         </a>
                     </div>
-                </div>
-
-                <div class="footer-section">
-                    <h3><span class="emoji-icon">💬</span> Suggestions</h3>
-                    <p>Une idée de récompense ? Partagez-la avec nous !</p>
-                    <form class="suggestion-form"
-                        onsubmit="submitSuggestion(event)">
-                        <textarea
-                            id="suggestion-text"
-                            placeholder="Votre suggestion de récompense..."
-                            rows="3"
-                            maxlength="500"
-                            required></textarea>
-                        <button type="submit"
-                            class="btn btn-primary btn-sm">Envoyer</button>
-                    </form>
                 </div>
             </div>
 

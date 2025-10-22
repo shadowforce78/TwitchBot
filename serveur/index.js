@@ -1189,6 +1189,134 @@ app.post('/api/bot/stop', requireAuth, requireAdmin, (req, res) => {
 	}
 });
 
+// API pour envoyer un email de contact
+app.post('/api/contact', async (req, res) => {
+	try {
+		const { name, email, subject, message } = req.body;
+		
+		// Validation
+		if (!name || !email || !message) {
+			return res.status(400).json({ error: 'validation', message: 'Tous les champs obligatoires doivent être remplis' });
+		}
+		
+		// Validation email
+		const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+		if (!emailRegex.test(email)) {
+			return res.status(400).json({ error: 'validation', message: 'Email invalide' });
+		}
+		
+		// Vérifier que les variables d'environnement sont définies
+		if (!process.env.SMTP_SERVER || !process.env.MAIL || !process.env.MAIL_PASSWORD) {
+			console.error('[contact] Variables d\'environnement manquantes:', {
+				SMTP_SERVER: !!process.env.SMTP_SERVER,
+				MAIL: !!process.env.MAIL,
+				MAIL_PASSWORD: !!process.env.MAIL_PASSWORD
+			});
+			return res.status(500).json({ 
+				error: 'config_error', 
+				message: 'Configuration email incomplète' 
+			});
+		}
+		
+		console.log('[contact] Configuration SMTP:', {
+			host: process.env.SMTP_SERVER,
+			port: process.env.SMTP_PORT,
+			user: process.env.MAIL,
+			passwordLength: process.env.MAIL_PASSWORD?.length
+		});
+		
+		// Configuration Nodemailer
+		const nodemailer = require('nodemailer');
+		
+		// Essayer d'abord avec le port configuré (465), sinon fallback sur 587
+		let transportConfig = {
+			host: process.env.SMTP_SERVER,
+			port: parseInt(process.env.SMTP_PORT) || 465,
+			secure: parseInt(process.env.SMTP_PORT) === 465, // true pour 465, false pour 587
+			auth: {
+				user: process.env.MAIL,
+				pass: process.env.MAIL_PASSWORD
+			},
+			tls: {
+				rejectUnauthorized: false,
+				minVersion: 'TLSv1.2'
+			}
+		};
+		
+		// Si le port est 465 et que ça échoue, on essaiera 587
+		let transporter = nodemailer.createTransport(transportConfig);
+		
+		// Vérifier la connexion
+		try {
+			await transporter.verify();
+			console.log('[contact] Serveur SMTP prêt (port', transportConfig.port + ')');
+		} catch (verifyError) {
+			console.error('[contact] Erreur avec port', transportConfig.port, ':', verifyError.message);
+			
+			// Essayer avec le port 587 (STARTTLS) si 465 échoue
+			if (transportConfig.port === 465) {
+				console.log('[contact] Tentative avec port 587 (STARTTLS)...');
+				transportConfig.port = 587;
+				transportConfig.secure = false;
+				transporter = nodemailer.createTransport(transportConfig);
+				
+				try {
+					await transporter.verify();
+					console.log('[contact] Serveur SMTP prêt avec port 587');
+				} catch (retry587Error) {
+					console.error('[contact] Échec avec port 587:', retry587Error.message);
+					return res.status(500).json({ 
+						error: 'smtp_error', 
+						message: 'Impossible de se connecter au serveur email. Veuillez contacter l\'administrateur.' 
+					});
+				}
+			} else {
+				return res.status(500).json({ 
+					error: 'smtp_error', 
+					message: 'Configuration email incorrecte. Veuillez contacter l\'administrateur.' 
+				});
+			}
+		}
+		
+		// Email à envoyer
+		const mailOptions = {
+			from: process.env.MAIL,
+			to: process.env.MAIL, // Envoyer à soi-même
+			replyTo: email, // Pour pouvoir répondre directement
+			subject: `[Contact Site] ${subject}`,
+			html: `
+				<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
+					<h2 style="color: #00D9A3;">Nouveau message de contact</h2>
+					<div style="background: #f5f5f5; padding: 20px; border-radius: 8px; margin: 20px 0;">
+						<p><strong>Nom :</strong> ${name}</p>
+						<p><strong>Email :</strong> ${email}</p>
+						<p><strong>Sujet :</strong> ${subject}</p>
+					</div>
+					<div style="background: white; padding: 20px; border: 1px solid #e0e0e0; border-radius: 8px;">
+						<h3 style="color: #333; margin-top: 0;">Message :</h3>
+						<p style="white-space: pre-wrap; color: #555; line-height: 1.6;">${message}</p>
+					</div>
+					<div style="margin-top: 20px; padding: 15px; background: #e8f5f1; border-radius: 8px;">
+						<p style="margin: 0; color: #666; font-size: 14px;">
+							💡 Vous pouvez répondre directement à cet email pour contacter ${name}
+						</p>
+					</div>
+				</div>
+			`
+		};
+		
+		// Envoyer l'email
+		await transporter.sendMail(mailOptions);
+		
+		console.log(`[contact] Email envoyé de ${email} (${name})`);
+		res.json({ success: true, message: 'Message envoyé avec succès' });
+		
+	} catch (error) {
+		console.error('[contact] Erreur envoi email:', error);
+		res.status(500).json({ error: 'internal', message: 'Erreur lors de l\'envoi du message' });
+	}
+});
+
 // Auto-start si ce fichier est exécuté directement
 if (require.main === module) {
 	app.listen(PORT, () => {

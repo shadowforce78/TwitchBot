@@ -23,6 +23,7 @@
     "express": "^4.19.2",
     "express-session": "^1.18.0",
     "mysql2": "^3.15.0",
+    "nodemailer": "^7.0.9",
     "nodemon": "^3.1.10",
     "tmi.js": "^1.8.5"
   }
