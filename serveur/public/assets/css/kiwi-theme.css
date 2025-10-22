@@ -597,6 +597,7 @@ main {
     display: flex;
     flex-wrap: wrap;
     gap: 1rem;
+    justify-content: center;
 }
 
 .social-link {
@@ -623,6 +624,39 @@ main {
 
 .social-link span {
     font-size: 1.25rem;
+}
+
+/* Style pour les icônes sociales uniquement */
+.social-link.social-icon-only {
+    padding: 1rem;
+    width: 60px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: var(--radius-full);
+    position: relative;
+}
+
+.social-link.social-icon-only .social-icon {
+    font-size: 1.75rem;
+    margin: 0;
+}
+
+.social-link.social-icon-only .social-icon-svg {
+    width: 28px;
+    height: 28px;
+    filter: brightness(0) saturate(100%);
+    transition: filter var(--transition-base);
+}
+
+.social-link.social-icon-only:hover .social-icon-svg {
+    filter: brightness(0) invert(1);
+}
+
+.social-link.social-icon-only:hover {
+    transform: translateY(-5px) scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 217, 163, 0.3);
 }
 
 .suggestion-form {
