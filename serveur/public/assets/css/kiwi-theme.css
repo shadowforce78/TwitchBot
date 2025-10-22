@@ -10,6 +10,17 @@
     padding: 0;
 }
 
+/* Forcer les émojis à garder leur couleur native même avec des gradients */
+.emoji-icon {
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    -webkit-text-fill-color: initial !important;
+    background-clip: initial !important;
+    color: initial !important;
+    display: inline-block;
+    font-style: normal;
+}
+
 :root {
     /* Couleurs principales - Thème clair et frais */
     --primary: #00D9A3;
