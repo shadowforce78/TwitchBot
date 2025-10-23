@@ -57,9 +57,14 @@
             <div class="card admin-card">
                 <div class="card-header">
                     <h3>🤖 Gestion des Commandes du Bot</h3>
-                    <button class="btn btn-outline btn-sm" onclick="refreshCommands()">
-                        🔄 Actualiser
-                    </button>
+                    <div style="display: flex; gap: 0.5rem;">
+                        <button class="btn btn-outline btn-sm" onclick="refreshCommands()">
+                            🔄 Actualiser
+                        </button>
+                        <button class="btn btn-secondary btn-sm" onclick="openCreateCommandModal()">
+                            ➕ Nouvelle Commande
+                        </button>
+                    </div>
                 </div>
                 <p>Activez ou désactivez les commandes du bot en temps réel.</p>
 
@@ -242,6 +247,121 @@
                 <div class="form-group">
                     <button type="submit" class="btn btn-primary" style="width: 100%;">
                         💾 Sauvegarder
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Create Command Modal -->
+    <div id="create-command-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">➕ Créer une nouvelle commande</h3>
+                <button class="modal-close" onclick="closeModal('create-command-modal')">&times;</button>
+            </div>
+            <form id="create-command-form" onsubmit="handleCreateCommand(event)">
+                <div class="form-group">
+                    <label class="form-label" for="new-command-name">Nom de la commande</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-weight: 600; color: var(--text-secondary);">!</span>
+                        <input 
+                            type="text" 
+                            id="new-command-name" 
+                            name="name" 
+                            class="form-input" 
+                            required 
+                            pattern="[a-z0-9_]+"
+                            placeholder="Ex: discord, twitter, regles"
+                            style="flex: 1;">
+                    </div>
+                    <small class="form-hint">Lettres minuscules, chiffres et _ uniquement. Sans le !</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="new-command-description">Description</label>
+                    <input 
+                        type="text" 
+                        id="new-command-description" 
+                        name="description" 
+                        class="form-input" 
+                        required 
+                        placeholder="Ex: Lien vers le Discord de la communauté">
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="new-command-content">Réponse de la commande</label>
+                    <textarea 
+                        id="new-command-content" 
+                        name="content" 
+                        class="form-textarea" 
+                        rows="4"
+                        required 
+                        placeholder="Ex: Rejoignez notre Discord : https://discord.gg/exemple"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" style="width: 100%;">
+                        ✨ Créer la commande
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Edit Command Modal -->
+    <div id="edit-command-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 class="modal-title">✏️ Modifier la commande</h3>
+                <button class="modal-close" onclick="closeModal('edit-command-modal')">&times;</button>
+            </div>
+            <form id="edit-command-form" onsubmit="handleEditCommand(event)">
+                <input type="hidden" id="edit-command-name" name="name">
+                
+                <div class="form-group">
+                    <label class="form-label">Nom de la commande</label>
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span style="font-weight: 600; color: var(--text-secondary);">!</span>
+                        <input 
+                            type="text" 
+                            id="edit-command-name-display" 
+                            class="form-input" 
+                            disabled
+                            style="flex: 1; background: var(--bg-tertiary); cursor: not-allowed;">
+                    </div>
+                    <small class="form-hint">Le nom de la commande ne peut pas être modifié</small>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-command-description">Description</label>
+                    <input 
+                        type="text" 
+                        id="edit-command-description" 
+                        name="description" 
+                        class="form-input" 
+                        required>
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label" for="edit-command-content">Réponse de la commande</label>
+                    <textarea 
+                        id="edit-command-content" 
+                        name="content" 
+                        class="form-textarea" 
+                        rows="4"
+                        required></textarea>
+                    <small class="form-hint">
+                        💡 Variables disponibles : {user} pour le nom de l'utilisateur, {channel} pour le nom de la chaîne
+                    </small>
+                </div>
+
+                <div class="form-group" style="display: flex; gap: 0.5rem;">
+                    <button type="submit" class="btn btn-primary" style="flex: 1;">
+                        💾 Sauvegarder
+                    </button>
+                    <button type="button" class="btn btn-error" onclick="deleteCommand()" style="flex: 1;">
+                        🗑️ Supprimer
                     </button>
                 </div>
             </form>

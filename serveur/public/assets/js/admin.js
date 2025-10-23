@@ -2,6 +2,7 @@
 
 let user = null;
 let giveaways = [];
+let commandsUpdateInterval = null;
 
 // ==== INITIALIZATION ====
 document.addEventListener('DOMContentLoaded', async function() {
@@ -12,6 +13,22 @@ document.addEventListener('DOMContentLoaded', async function() {
     await loadAllData();
     
     initializeEventListeners();
+    startLiveUpdates();
+});
+
+// ==== LIVE UPDATES ====
+function startLiveUpdates() {
+    // Recharger les commandes toutes les 5 secondes
+    commandsUpdateInterval = setInterval(async () => {
+        await loadCommands(true); // true = silent update (pas de notification)
+    }, 5000);
+}
+
+// Arrêter les mises à jour quand on quitte la page
+window.addEventListener('beforeunload', () => {
+    if (commandsUpdateInterval) {
+        clearInterval(commandsUpdateInterval);
+    }
 });
 
 // ==== AUTHENTICATION & ACCESS ====
@@ -53,6 +70,7 @@ function checkAdminAccess() {
 // ==== DATA LOADING ====
 async function loadAllData() {
     await Promise.all([
+        loadCommands(),
         loadGiveaways(),
         loadBotStats(),
         loadOverviewStats(),
@@ -620,18 +638,32 @@ function closeModal(modalId) {
 // ==== BOT COMMANDS MANAGEMENT ====
 let commands = [];
 
-async function loadCommands() {
+async function loadCommands(silent = false) {
     try {
         const response = await fetch('/api/commands');
         if (response.ok) {
-            commands = await response.json();
-            displayCommands();
-        } else {
+            const newCommands = await response.json();
+            
+            // Vérifier si les commandes ont changé
+            const hasChanged = JSON.stringify(commands) !== JSON.stringify(newCommands);
+            
+            if (hasChanged) {
+                commands = newCommands;
+                displayCommands();
+                
+                if (!silent) {
+                    // Montrer une notification subtile seulement si ce n'est pas un chargement silencieux
+                    console.log('Commandes mises à jour');
+                }
+            }
+        } else if (!silent) {
             showNotification('Erreur lors du chargement des commandes', 'error');
         }
     } catch (error) {
         console.error('Erreur chargement commandes:', error);
-        showNotification('Erreur de connexion', 'error');
+        if (!silent) {
+            showNotification('Erreur de connexion', 'error');
+        }
     }
 }
 
@@ -672,12 +704,15 @@ function displayCommands() {
                             ${cmd.enabled ? '✓ Active' : '✕ Désactivée'}
                         </span>
                         <div class="command-actions">
-                            ${cmd.type === 'basic' && cmd.name !== 'command' ? `
+                            ${cmd.type === 'basic' && cmd.name !== 'command' && cmd.name !== 'help' ? `
                                 <button class="btn btn-outline btn-sm" onclick="editCommand('${escapeHtml(cmd.name)}')">
                                     ✏️ Modifier
                                 </button>
+                                <button class="btn btn-error btn-sm" onclick="confirmDeleteCommand('${escapeHtml(cmd.name)}')">
+                                    🗑️
+                                </button>
                             ` : ''}
-                            ${cmd.name === 'command' ? '<small style="color: var(--warning);">⚠️ Protégée</small>' : ''}
+                            ${cmd.name === 'command' || cmd.name === 'help' ? '<small style="color: var(--warning);">⚠️ Protégée</small>' : ''}
                         </div>
                     </div>
                 </div>
@@ -738,6 +773,59 @@ async function refreshCommands() {
     await loadCommands();
 }
 
+// ==== CREATE COMMAND ====
+function openCreateCommandModal() {
+    // Réinitialiser le formulaire
+    document.getElementById('create-command-form').reset();
+    openModal('create-command-modal');
+}
+
+async function handleCreateCommand(event) {
+    event.preventDefault();
+    
+    const formData = new FormData(event.target);
+    const commandData = {
+        name: formData.get('name').toLowerCase().trim(),
+        description: formData.get('description').trim(),
+        content: formData.get('content').trim(),
+        type: 'basic',
+        enabled: true
+    };
+    
+    // Validation
+    if (!commandData.name.match(/^[a-z0-9_]+$/)) {
+        showNotification('Le nom de la commande doit contenir uniquement des lettres minuscules, chiffres et _', 'error');
+        return;
+    }
+    
+    if (commands.find(c => c.name === commandData.name)) {
+        showNotification(`La commande !${commandData.name} existe déjà`, 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/commands', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(commandData)
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification(`Commande !${commandData.name} créée avec succès`, 'success');
+            closeModal('create-command-modal');
+            await loadCommands(); // Recharger les commandes
+        } else {
+            showNotification(data.message || 'Erreur lors de la création', 'error');
+        }
+    } catch (error) {
+        console.error('Erreur create command:', error);
+        showNotification('Erreur de connexion', 'error');
+    }
+}
+
+// ==== EDIT COMMAND ====
 function editCommand(commandName) {
     const cmd = commands.find(c => c.name === commandName);
     if (!cmd) {
@@ -752,20 +840,25 @@ function editCommand(commandName) {
     
     // Remplir le formulaire
     document.getElementById('edit-command-name').value = cmd.name;
+    document.getElementById('edit-command-name-display').value = cmd.name;
+    document.getElementById('edit-command-description').value = cmd.description || '';
     document.getElementById('edit-command-content').value = cmd.content || '';
-    document.getElementById('edit-command-description-display').textContent = cmd.description || 'Aucune description';
     
     // Ouvrir la modale
     openModal('edit-command-modal');
 }
 
-async function saveCommandContent(event) {
+async function handleEditCommand(event) {
     event.preventDefault();
     
     const commandName = document.getElementById('edit-command-name').value;
-    const content = document.getElementById('edit-command-content').value.trim();
+    const formData = new FormData(event.target);
+    const updateData = {
+        description: formData.get('description').trim(),
+        content: formData.get('content').trim()
+    };
     
-    if (!content) {
+    if (!updateData.content) {
         showNotification('Le contenu ne peut pas être vide', 'error');
         return;
     }
@@ -774,28 +867,61 @@ async function saveCommandContent(event) {
         const response = await fetch(`/api/commands/${commandName}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content })
+            body: JSON.stringify(updateData)
         });
         
         const data = await response.json();
         
         if (response.ok) {
             showNotification(`Commande !${commandName} mise à jour avec succès`, 'success');
-            
-            // Mettre à jour localement
-            const cmd = commands.find(c => c.name === commandName);
-            if (cmd) {
-                cmd.content = data.content;
-            }
-            
-            // Fermer la modale et rafraîchir
             closeModal('edit-command-modal');
-            displayCommands();
+            await loadCommands(); // Recharger les commandes
         } else {
             showNotification(data.message || 'Erreur lors de la mise à jour', 'error');
         }
     } catch (error) {
-        console.error('Erreur save command:', error);
+        console.error('Erreur edit command:', error);
+        showNotification('Erreur de connexion', 'error');
+    }
+}
+
+// ==== DELETE COMMAND ====
+function confirmDeleteCommand(commandName) {
+    const cmd = commands.find(c => c.name === commandName);
+    if (!cmd) return;
+    
+    if (confirm(`⚠️ Êtes-vous sûr de vouloir supprimer définitivement la commande !${commandName} ?\n\nCette action est irréversible.`)) {
+        deleteCommandByName(commandName);
+    }
+}
+
+async function deleteCommand() {
+    const commandName = document.getElementById('edit-command-name').value;
+    
+    if (!confirm(`⚠️ Êtes-vous sûr de vouloir supprimer définitivement la commande !${commandName} ?\n\nCette action est irréversible.`)) {
+        return;
+    }
+    
+    await deleteCommandByName(commandName);
+    closeModal('edit-command-modal');
+}
+
+async function deleteCommandByName(commandName) {
+    try {
+        const response = await fetch(`/api/commands/${commandName}`, {
+            method: 'DELETE'
+        });
+        
+        const data = await response.json();
+        
+        if (response.ok) {
+            showNotification(`Commande !${commandName} supprimée avec succès`, 'success');
+            await loadCommands(); // Recharger les commandes
+        } else {
+            showNotification(data.message || 'Erreur lors de la suppression', 'error');
+        }
+    } catch (error) {
+        console.error('Erreur delete command:', error);
         showNotification('Erreur de connexion', 'error');
     }
 }
